@@ -24,11 +24,11 @@ const _ = grpc.SupportPackageIsVersion7
 type UsersClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*Void, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Void, error)
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
-	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
-	UpdateProfileAdmin(ctx context.Context, in *UpdateProfileAdminRequest, opts ...grpc.CallOption) (*UpdateProfileAdminResponse, error)
-	DeleteProfile(ctx context.Context, in *DeleteProfileRequest, opts ...grpc.CallOption) (*DeleteProfileResponse, error)
+	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Void, error)
+	UpdateProfileAdmin(ctx context.Context, in *UpdateProfileAdminRequest, opts ...grpc.CallOption) (*Void, error)
+	DeleteProfile(ctx context.Context, in *DeleteProfileRequest, opts ...grpc.CallOption) (*Void, error)
 }
 
 type usersClient struct {
@@ -57,8 +57,8 @@ func (c *usersClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *usersClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
-	out := new(GetProfileResponse)
+func (c *usersClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/user.Users/GetProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -75,8 +75,8 @@ func (c *usersClient) GetAllUsers(ctx context.Context, in *GetAllUsersRequest, o
 	return out, nil
 }
 
-func (c *usersClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
-	out := new(UpdateProfileResponse)
+func (c *usersClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/user.Users/UpdateProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -84,8 +84,8 @@ func (c *usersClient) UpdateProfile(ctx context.Context, in *UpdateProfileReques
 	return out, nil
 }
 
-func (c *usersClient) UpdateProfileAdmin(ctx context.Context, in *UpdateProfileAdminRequest, opts ...grpc.CallOption) (*UpdateProfileAdminResponse, error) {
-	out := new(UpdateProfileAdminResponse)
+func (c *usersClient) UpdateProfileAdmin(ctx context.Context, in *UpdateProfileAdminRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/user.Users/UpdateProfileAdmin", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -93,8 +93,8 @@ func (c *usersClient) UpdateProfileAdmin(ctx context.Context, in *UpdateProfileA
 	return out, nil
 }
 
-func (c *usersClient) DeleteProfile(ctx context.Context, in *DeleteProfileRequest, opts ...grpc.CallOption) (*DeleteProfileResponse, error) {
-	out := new(DeleteProfileResponse)
+func (c *usersClient) DeleteProfile(ctx context.Context, in *DeleteProfileRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/user.Users/DeleteProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -108,11 +108,11 @@ func (c *usersClient) DeleteProfile(ctx context.Context, in *DeleteProfileReques
 type UsersServer interface {
 	Register(context.Context, *RegisterRequest) (*Void, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	GetProfile(context.Context, *GetProfileRequest) (*Void, error)
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
-	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
-	UpdateProfileAdmin(context.Context, *UpdateProfileAdminRequest) (*UpdateProfileAdminResponse, error)
-	DeleteProfile(context.Context, *DeleteProfileRequest) (*DeleteProfileResponse, error)
+	UpdateProfile(context.Context, *UpdateProfileRequest) (*Void, error)
+	UpdateProfileAdmin(context.Context, *UpdateProfileAdminRequest) (*Void, error)
+	DeleteProfile(context.Context, *DeleteProfileRequest) (*Void, error)
 	mustEmbedUnimplementedUsersServer()
 }
 
@@ -126,19 +126,19 @@ func (UnimplementedUsersServer) Register(context.Context, *RegisterRequest) (*Vo
 func (UnimplementedUsersServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedUsersServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
+func (UnimplementedUsersServer) GetProfile(context.Context, *GetProfileRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
 func (UnimplementedUsersServer) GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
 }
-func (UnimplementedUsersServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
+func (UnimplementedUsersServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
-func (UnimplementedUsersServer) UpdateProfileAdmin(context.Context, *UpdateProfileAdminRequest) (*UpdateProfileAdminResponse, error) {
+func (UnimplementedUsersServer) UpdateProfileAdmin(context.Context, *UpdateProfileAdminRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfileAdmin not implemented")
 }
-func (UnimplementedUsersServer) DeleteProfile(context.Context, *DeleteProfileRequest) (*DeleteProfileResponse, error) {
+func (UnimplementedUsersServer) DeleteProfile(context.Context, *DeleteProfileRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProfile not implemented")
 }
 func (UnimplementedUsersServer) mustEmbedUnimplementedUsersServer() {}
