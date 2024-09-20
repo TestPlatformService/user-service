@@ -1,5 +1,6 @@
 CREATE TYPE roles AS ENUM ('admin','student','teacher','support');
 CREATE TYPE genders AS ENUM ('male','female');
+CREATE TYPE days AS ENUM ('monday','tuesday','wednesday','thursday','friday','saturday','sunday');
 
 
 
@@ -30,28 +31,28 @@ CREATE TABLE IF NOT EXISTS groups (
     started_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS student_groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id UUID REFERENCES users(id),
-    group_id UUID REFERENCES groups(id),
+    student_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS teacher_groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    teacher_id UUID REFERENCES users(id),
-    group_id UUID REFERENCES groups(id),
+    teacher_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS group_days (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_id UUID REFERENCES groups(id),
-    day VARCHAR(100) NOT NULL,
-)
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    day days NOT NULL
+);
