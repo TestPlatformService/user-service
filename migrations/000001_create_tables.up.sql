@@ -25,5 +25,33 @@ CREATE TABLE IF NOT EXISTS groups (
     name VARCHAR(100) NOT NULL,
     subject_id UUID NOT NULL,
     room VARCHAR(100),
-    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+)
+
+CREATE TABLE IF NOT EXISTS student_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID REFERENCES users(id),
+    group_id UUID REFERENCES groups(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+)
+
+CREATE TABLE IF NOT EXISTS teacher_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    teacher_id UUID REFERENCES users(id),
+    group_id UUID REFERENCES groups(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+)
+
+CREATE TABLE IF NOT EXISTS group_days (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id UUID REFERENCES groups(id),
+    day VARCHAR(100) NOT NULL,
 )
