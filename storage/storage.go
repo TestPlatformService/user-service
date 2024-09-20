@@ -7,6 +7,7 @@ import (
 
 type IStorage interface {
 	User() IUserStorage
+	Notifications() INotificationStorage
 	Close()
 }
 
@@ -18,4 +19,10 @@ type IUserStorage interface {
 	UpdateProfile(context.Context, *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error)
 	UpdateProfileAdmin(context.Context, *pb.UpdateProfileAdminRequest) (*pb.UpdateProfileAdminResponse, error)
 	DeleteProfile(context.Context, *pb.DeleteProfileRequest) (*pb.DeleteProfileResponse, error)
+}
+
+type INotificationStorage interface {
+	CreateNotifications(context.Context, *pb.CreateNotificationsReq) (*pb.CreateNotificationsRes, error)
+	GetAllNotifications(context.Context, *pb.GetNotificationsReq) (*pb.GetNotificationsResponse, error)
+	GetAndMarkNotificationAsRead(context.Context, *pb.GetAndMarkNotificationAsReadReq) (*pb.GetAndMarkNotificationAsReadRes, error)
 }

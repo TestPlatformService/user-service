@@ -1,11 +1,10 @@
 package postgres
 
 import (
-	pb "auth/genproto/user"
-	"auth/storage"
 	"context"
 	"database/sql"
 	"fmt"
+	pb "user/genproto/notification"
 )
 
 type NotificationsRepository struct {
