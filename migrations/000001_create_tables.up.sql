@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     profile_image VARCHAR(100),
     phone_number VARCHAR(20) UNIQUE NOT NULL,
-    parents_phone_number VARCHAR(20) UNIQUE NOT NULL,
     gender genders NOT NULL,
     date_of_birth DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

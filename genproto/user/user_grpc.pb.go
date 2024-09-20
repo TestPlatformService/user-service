@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersClient interface {
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*Void, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
@@ -39,8 +39,8 @@ func NewUsersClient(cc grpc.ClientConnInterface) UsersClient {
 	return &usersClient{cc}
 }
 
-func (c *usersClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
-	out := new(RegisterResponse)
+func (c *usersClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
 	err := c.cc.Invoke(ctx, "/user.Users/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (c *usersClient) DeleteProfile(ctx context.Context, in *DeleteProfileReques
 // All implementations must embed UnimplementedUsersServer
 // for forward compatibility
 type UsersServer interface {
-	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	Register(context.Context, *RegisterRequest) (*Void, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
@@ -120,7 +120,7 @@ type UsersServer interface {
 type UnimplementedUsersServer struct {
 }
 
-func (UnimplementedUsersServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+func (UnimplementedUsersServer) Register(context.Context, *RegisterRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedUsersServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
