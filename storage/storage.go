@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	pb1 "user/genproto/notification"
 	pb "user/genproto/user"
 )
 
@@ -22,7 +23,7 @@ type IUserStorage interface {
 }
 
 type INotificationStorage interface {
-	CreateNotifications(context.Context, *pb.CreateNotificationsReq) (*pb.CreateNotificationsRes, error)
-	GetAllNotifications(context.Context, *pb.GetNotificationsReq) (*pb.GetNotificationsResponse, error)
-	GetAndMarkNotificationAsRead(context.Context, *pb.GetAndMarkNotificationAsReadReq) (*pb.GetAndMarkNotificationAsReadRes, error)
+	CreateNotifications(context.Context, *pb1.CreateNotificationsReq) (*pb1.CreateNotificationsRes, error)
+	GetAllNotifications(context.Context, *pb1.GetNotificationsReq) (*pb1.GetNotificationsResponse, error)
+	GetAndMarkNotificationAsRead(context.Context, *pb1.GetAndMarkNotificationAsReadReq) (*pb1.GetAndMarkNotificationAsReadRes, error)
 }

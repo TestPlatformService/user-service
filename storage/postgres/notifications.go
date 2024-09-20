@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	pb "user/genproto/notification"
+	"user/storage"
 )
 
 type NotificationsRepository struct {
