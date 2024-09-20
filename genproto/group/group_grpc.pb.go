@@ -4,7 +4,7 @@
 // - protoc             v5.27.1
 // source: group.proto
 
-package user_service
+package group
 
 import (
 	context "context"

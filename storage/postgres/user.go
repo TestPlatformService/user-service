@@ -7,8 +7,6 @@ import (
 	"user/storage"
 )
 
-
-
 type UserRepo struct {
 	DB  *sql.DB
 	Log *slog.Logger
@@ -17,4 +15,3 @@ type UserRepo struct {
 func NewUserRepo(DB *sql.DB) storage.IUserStorage {
 	return &UserRepo{DB: DB, Log: logs.NewLogger()}
 }
-

@@ -4,7 +4,7 @@
 // - protoc             v5.27.1
 // source: notification.proto
 
-package user_service
+package notification
 
 import (
 	context "context"
