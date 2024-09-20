@@ -55,3 +55,12 @@ CREATE TABLE IF NOT EXISTS group_days (
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     day days NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS notifications(
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    messages TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
