@@ -1,4 +1,5 @@
 -- Drop the tables in reverse order to avoid foreign key constraint issues
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS group_days;
 DROP TABLE IF EXISTS teacher_groups;
 DROP TABLE IF EXISTS student_groups;
