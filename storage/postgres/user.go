@@ -37,7 +37,9 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 	var user pb.LoginResponse
 
-	query := `SELECT id, role FROM users WHERE hh_id = $1 and password_hash = $2 and deleted_at IS NULL`
+	query := `SELECT id, role 
+	FROM users 
+	WHERE hh_id = $1 and password_hash = $2 and deleted_at IS NULL`
 
 	err := u.DB.QueryRow(query, req.HhId, req.Password).Scan(&user.Id, &user.Role)
 	if err == sql.ErrNoRows {
@@ -57,7 +59,9 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*pb.GetProfileResponse, error) {
 	var user pb.GetProfileResponse
 
-	query := `SELECT hh_id, first_name, last_name, password_hash, phone_number, date_of_birth, gender FROM users WHERE id = $1 and deleted_at IS NULL`
+	query := `SELECT hh_id, first_name, last_name, password_hash, phone_number, date_of_birth, gender 
+	FROM users 
+	WHERE id = $1 and deleted_at IS NULL`
 
 	err := u.DB.QueryRow(query, req.Id).Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.DateOfBirth, &user.Gender)
 	if err == sql.ErrNoRows {
@@ -132,7 +136,8 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 
 
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
-	query := `UPDATE users SET profile_image = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND deleted_at IS NULL`
+	query := `UPDATE users SET profile_image = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP 
+	WHERE id = $3 AND deleted_at IS NULL`
 
 	_, err := u.DB.Exec(query, req.ProfilePicture, req.Password, req.Id)
 	if err != nil {
@@ -144,7 +149,8 @@ func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileReque
 }
 
 func (u *UserRepo) UpdateProfileAdmin(ctx context.Context, req *pb.UpdateProfileAdminRequest) (*pb.Void, error) {
-	query := `UPDATE users SET first_name = $1, last_name = $2, password_hash = $3, phone_number = $4, date_of_birth = $5, gender = $6, "group" = $7, updated_at = CURRENT_TIMESTAMP WHERE id = $8 AND deleted_at IS NULL`
+	query := `UPDATE users SET first_name = $1, last_name = $2, password_hash = $3, phone_number = $4, date_of_birth = $5, gender = $6, "group" = $7, updated_at = CURRENT_TIMESTAMP 
+	WHERE id = $8 AND deleted_at IS NULL`
 
 	_, err := u.DB.Exec(query, req.Firstname, req.Lastname, req.Password, req.Phone, req.DateOfBirth, req.Gender, req.Group, req.Id)
 	if err != nil {
