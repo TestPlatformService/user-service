@@ -15,10 +15,10 @@ type UserService struct {
 
 	Logger *slog.Logger
 }
-
+ 
 func NewUserService(db *sql.DB, Logger *slog.Logger) *UserService {
 	return &UserService{
-		User:   postgres.NewUserRepo(db),
+		User:   postgres.NewIstorage(db),
 		Logger: Logger,
 	}
 }
@@ -41,7 +41,7 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	}
 
 	return &pb.LoginResponse{
-		Id: res.Id,
+		Id:   res.Id,
 		Role: res.Role,
 	}, nil
 }
@@ -54,15 +54,15 @@ func (s *UserService) GetProfile(ctx context.Context, req *pb.GetProfileRequest)
 	}
 
 	return &pb.GetProfileResponse{
-		HhId: res.HhId,
-		Firstname: res.Firstname,
-		Lastname: res.Lastname,
-		Password: res.Password,
-		Phone: res.Phone,
+		HhId:        res.HhId,
+		Firstname:   res.Firstname,
+		Lastname:    res.Lastname,
+		Password:    res.Password,
+		Phone:       res.Phone,
 		DateOfBirth: res.DateOfBirth,
-		Gender: res.Gender,
-		Id: res.Id,
-		}, nil
+		Gender:      res.Gender,
+		Id:          res.Id,
+	}, nil
 }
 
 func (s *UserService) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
@@ -73,7 +73,7 @@ func (s *UserService) GetAllUsers(ctx context.Context, req *pb.GetAllUsersReques
 	}
 
 	return &pb.GetAllUsersResponse{
-		Users: res.Users,
+		Users:      res.Users,
 		TotalCount: res.TotalCount,
 	}, nil
 }

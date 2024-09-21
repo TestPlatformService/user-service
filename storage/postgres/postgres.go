@@ -44,3 +44,9 @@ func (p *postgresStorage) User() storage.IUserStorage {
 func (p *postgresStorage) Notifications() storage.INotificationStorage {
 	return NewNotificationsRepository(p.db)
 }
+
+func NewIstorage(db *sql.DB) storage.IStorage {
+	return &postgresStorage{
+		db: db,
+	}
+} 
