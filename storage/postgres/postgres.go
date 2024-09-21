@@ -1,11 +1,11 @@
 package postgres
 
 import (
-	"user/config"
-	"user/storage"
 	"database/sql"
 	"fmt"
 	"log"
+	"user/config"
+	"user/storage"
 
 	_ "github.com/lib/pq"
 )
@@ -40,3 +40,13 @@ func (p *postgresStorage) Close() {
 func (p *postgresStorage) User() storage.IUserStorage {
 	return NewUserRepo(p.db)
 }
+
+func (p *postgresStorage) Notifications() storage.INotificationStorage {
+	return NewNotificationsRepository(p.db)
+}
+
+func NewIstorage(db *sql.DB) storage.IStorage {
+	return &postgresStorage{
+		db: db,
+	}
+} 
