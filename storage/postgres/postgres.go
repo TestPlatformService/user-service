@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"user/config"
+	"user/logs"
 	"user/storage"
 
 	_ "github.com/lib/pq"
@@ -43,6 +44,10 @@ func (p *postgresStorage) User() storage.IUserStorage {
 
 func (p *postgresStorage) Notifications() storage.INotificationStorage {
 	return NewNotificationsRepository(p.db)
+}
+
+func (p *postgresStorage) Group() storage.IGroupStorage {
+	return NewGroupRepo(p.db, logs.NewLogger())
 }
 
 func NewIstorage(db *sql.DB) storage.IStorage {

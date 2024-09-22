@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 	pb "user/genproto/group"
+	"user/storage"
 
 	"github.com/google/uuid"
 )
@@ -18,7 +19,7 @@ type groupImpl struct {
 	Logger *slog.Logger
 }
 
-func NewGroupRepo(db *sql.DB, logger *slog.Logger) GroupRepo {
+func NewGroupRepo(db *sql.DB, logger *slog.Logger) storage.IGroupStorage {
 	return &groupImpl{
 		DB:     db,
 		Logger: logger,
