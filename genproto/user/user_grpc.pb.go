@@ -34,7 +34,7 @@ const (
 type UsersClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*Void, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Void, error)
+	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Void, error)
 	UpdateProfileAdmin(ctx context.Context, in *UpdateProfileAdminRequest, opts ...grpc.CallOption) (*Void, error)
@@ -69,9 +69,9 @@ func (c *usersClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *usersClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Void, error) {
+func (c *usersClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Void)
+	out := new(GetProfileResponse)
 	err := c.cc.Invoke(ctx, Users_GetProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func (c *usersClient) DeleteProfile(ctx context.Context, in *DeleteProfileReques
 type UsersServer interface {
 	Register(context.Context, *RegisterRequest) (*Void, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	GetProfile(context.Context, *GetProfileRequest) (*Void, error)
+	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*Void, error)
 	UpdateProfileAdmin(context.Context, *UpdateProfileAdminRequest) (*Void, error)
@@ -143,7 +143,7 @@ func (UnimplementedUsersServer) Register(context.Context, *RegisterRequest) (*Vo
 func (UnimplementedUsersServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedUsersServer) GetProfile(context.Context, *GetProfileRequest) (*Void, error) {
+func (UnimplementedUsersServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
 func (UnimplementedUsersServer) GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error) {
