@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	pb "user/genproto/notification"
 	"user/storage"
-	"user/storage/postgres"
 )
 
 type NotificationsService struct {
@@ -16,9 +15,9 @@ type NotificationsService struct {
 	Logger  *slog.Logger
 }
 
-func NewNotificationsService(db *sql.DB, Logger *slog.Logger) *NotificationsService {
+func NewNotificationsService(db *sql.DB, Logger *slog.Logger, istorage storage.IStorage) *NotificationsService {
 	return &NotificationsService{
-		Storage: postgres.NewIstorage(db),
+		Storage: istorage,
 		Logger:  Logger,
 	}
 }

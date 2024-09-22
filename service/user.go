@@ -6,19 +6,17 @@ import (
 	"log/slog"
 	pb "user/genproto/user"
 	"user/storage"
-	"user/storage/postgres"
 )
 
 type UserService struct {
 	pb.UnimplementedUsersServer
-	User storage.IStorage
-
+	User   storage.IStorage
 	Logger *slog.Logger
 }
- 
-func NewUserService(db *sql.DB, Logger *slog.Logger) *UserService {
+
+func NewUserService(db *sql.DB, Logger *slog.Logger, istorage storage.IStorage) *UserService {
 	return &UserService{
-		User:   postgres.NewIstorage(db),
+		User:   istorage,
 		Logger: Logger,
 	}
 }
@@ -53,16 +51,7 @@ func (s *UserService) GetProfile(ctx context.Context, req *pb.GetProfileRequest)
 		return nil, err
 	}
 
-	return &pb.GetProfileResponse{
-		HhId:        res.HhId,
-		Firstname:   res.Firstname,
-		Lastname:    res.Lastname,
-		Password:    res.Password,
-		Phone:       res.Phone,
-		DateOfBirth: res.DateOfBirth,
-		Gender:      res.Gender,
-		Id:          res.Id,
-	}, nil
+	return res, nil
 }
 
 func (s *UserService) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {

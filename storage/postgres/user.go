@@ -51,7 +51,7 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	return &pb.LoginResponse{
-		Id: user.Id,
+		Id:   user.Id,
 		Role: user.Role,
 	}, nil
 }
@@ -73,35 +73,35 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 	}
 
 	return &pb.GetProfileResponse{
-		HhId: user.HhId,
-		Firstname: user.Firstname,
-		Lastname: user.Lastname,
-		Password: user.Password,
-		Phone: user.Phone,
+		HhId:        user.HhId,
+		Firstname:   user.Firstname,
+		Lastname:    user.Lastname,
+		Password:    user.Password,
+		Phone:       user.Phone,
 		DateOfBirth: user.DateOfBirth,
-		Gender: user.Gender,
-		Id: user.Id,
+		Gender:      user.Gender,
+		Id:          user.Id,
 	}, nil
 }
 
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-    var allUsers pb.GetAllUsersResponse
+	var allUsers pb.GetAllUsersResponse
 
-    countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
-    var totalCount int64
-    err := u.DB.QueryRow(countQuery).Scan(&totalCount)
-    if err != nil {
-        u.Log.Error("Error while counting users", "error", err)
-        return nil, err
-    }
-    allUsers.TotalCount = totalCount
+	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
+	var totalCount int64
+	err := u.DB.QueryRow(countQuery).Scan(&totalCount)
+	if err != nil {
+		u.Log.Error("Error while counting users", "error", err)
+		return nil, err
+	}
+	allUsers.TotalCount = totalCount
 
-    offset := (req.Page - 1) * req.Limit
-    if req.Page <= 0 {
-        offset = 0
-    }
+	offset := (req.Page - 1) * req.Limit
+	if req.Page <= 0 {
+		offset = 0
+	}
 
-    query := `
+	query := `
         SELECT role, "group", subject, teacher, hh_id, phone_number, gender 
         FROM users 
         WHERE deleted_at IS NULL 
@@ -109,31 +109,30 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
         LIMIT $1 OFFSET $2
     `
 
-    rows, err := u.DB.Query(query, req.Limit, offset)
-    if err != nil {
-        u.Log.Error("Error fetching users", "error", err)
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := u.DB.Query(query, req.Limit, offset)
+	if err != nil {
+		u.Log.Error("Error fetching users", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
 
-    for rows.Next() {
-        var user pb.AllUsers
-        err := rows.Scan(&user.Role, &user.Group, &user.Subject, &user.Teacher, &user.HhId, &user.PhoneNumber, &user.Gender)
-        if err != nil {
-            u.Log.Error("Error scanning user", "error", err)
-            return nil, err
-        }
-        allUsers.Users = append(allUsers.Users, &user)
-    }
+	for rows.Next() {
+		var user pb.AllUsers
+		err := rows.Scan(&user.Role, &user.Group, &user.Subject, &user.Teacher, &user.HhId, &user.PhoneNumber, &user.Gender)
+		if err != nil {
+			u.Log.Error("Error scanning user", "error", err)
+			return nil, err
+		}
+		allUsers.Users = append(allUsers.Users, &user)
+	}
 
-    if err := rows.Err(); err != nil {
-        u.Log.Error("Row iteration error", "error", err)
-        return nil, err
-    }
+	if err := rows.Err(); err != nil {
+		u.Log.Error("Row iteration error", "error", err)
+		return nil, err
+	}
 
-    return &allUsers, nil
+	return &allUsers, nil
 }
-
 
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
 	query := `UPDATE users SET profile_image = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP 
