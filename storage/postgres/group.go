@@ -79,7 +79,7 @@ func (G *groupImpl) DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) {
           deleted_at = $1
         WHERE 
           id = $2 AND deleted_at IS NULL`
-	_, err := G.DB.Exec(query, time.Now().String(), req.Id)
+	_, err := G.DB.Exec(query, time.Now(), req.Id)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return &pb.DeleteResp{
@@ -129,26 +129,27 @@ func (G *groupImpl) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp,
         WHERE 
           deleted_at IS NULL`
 	if len(req.SubjectId) > 0 {
-		query += fmt.Sprintf(" AND subject_id = %s", req.SubjectId)
+		query += fmt.Sprintf(" AND subject_id = '%s'", req.SubjectId)
 	}
 	if len(req.Room) > 0 {
-		query += fmt.Sprintf(" AND room = %s", req.Room)
+		query += fmt.Sprintf(" AND room = '%s'", req.Room)
 	}
-	query += fmt.Sprintf(" limit = %d offset = %d", req.Limit, req.Offset)
+	query += fmt.Sprintf(" limit %d offset %d", req.Limit, req.Offset)
 
 	rows, err := G.DB.Query(query)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
-		var group *pb.Group
+		var group pb.Group
 		err = rows.Scan(&group.Id, &group.Name, &group.SubjectId, &group.Room, &group.StartTime, &group.EndTime, &group.StartedAt)
 		if err != nil {
 			G.Logger.Error(err.Error())
 			return nil, err
 		}
-		groups = append(groups, group)
+		groups = append(groups, &group)
 	}
 	return &pb.GetAllGroupsResp{
 		Groups: groups,
