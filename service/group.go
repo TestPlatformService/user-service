@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -21,7 +22,7 @@ func NewGroupService(db *sql.DB, Logger *slog.Logger, istorage storage.IStorage)
 	}
 }
 
-func (g *GroupService) CreateGroup(req *pb.CreateGroupReq) (*pb.CreateGroupResp, error) {
+func (g *GroupService) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.CreateGroupResp, error) {
 
 	res, err := g.Storage.Group().CreateGroup(req)
 	if err != nil {
@@ -32,7 +33,7 @@ func (g *GroupService) CreateGroup(req *pb.CreateGroupReq) (*pb.CreateGroupResp,
 	return res, nil
 }
 
-func (g *GroupService) UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error) {
+func (g *GroupService) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error) {
 
 	res, err := g.Storage.Group().UpdateGroup(req)
 	if err != nil {
@@ -44,7 +45,7 @@ func (g *GroupService) UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp,
 	return res, nil
 }
 
-func (g *GroupService) DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) {
+func (g *GroupService) DeleteGroup(ctx context.Context, req *pb.GroupId) (*pb.DeleteResp, error) {
 
 	res, err := g.Storage.Group().DeleteGroup(req)
 	if err != nil {
@@ -56,7 +57,7 @@ func (g *GroupService) DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) {
 	return res, nil
 }
 
-func (g *GroupService) GetGroupById(req *pb.GroupId) (*pb.Group, error) {
+func (g *GroupService) GetGroupById(ctx context.Context, req *pb.GroupId) (*pb.Group, error) {
 
 	res, err := g.Storage.Group().GetGroupById(req)
 	if err != nil {
@@ -68,7 +69,7 @@ func (g *GroupService) GetGroupById(req *pb.GroupId) (*pb.Group, error) {
 	return res, nil
 }
 
-func (g *GroupService) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp, error) {
+func (g *GroupService) GetAllGroups(ctx context.Context, req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp, error) {
 
 	res, err := g.Storage.Group().GetAllGroups(req)
 	if err != nil {
@@ -80,7 +81,7 @@ func (g *GroupService) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsRe
 	return res, nil
 }
 
-func (g *GroupService) AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentResp, error) {
+func (g *GroupService) AddStudentToGroup(ctx context.Context, req *pb.AddStudentReq) (*pb.AddStudentResp, error) {
 	res, err := g.Storage.Group().AddStudentToGroup(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error adding Student to group: %v", err))
@@ -91,7 +92,7 @@ func (g *GroupService) AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentR
 	return res, nil
 }
 
-func (g *GroupService) DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.DeleteResp, error) {
+func (g *GroupService) DeleteStudentFromGroup(ctx context.Context, req *pb.DeleteStudentReq) (*pb.DeleteResp, error) {
 	res, err := g.Storage.Group().DeleteStudentFromGroup(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error deleting student from group: %v", err))
@@ -102,7 +103,7 @@ func (g *GroupService) DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.Del
 	return res, nil
 }
 
-func (g *GroupService) AddTeacherToGroup(req *pb.AddTeacherReq) (*pb.AddTeacherResp, error) {
+func (g *GroupService) AddTeacherToGroup(ctx context.Context, req *pb.AddTeacherReq) (*pb.AddTeacherResp, error) {
 	res, err := g.Storage.Group().AddTeacherToGroup(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error adding teacher to group: %v", err))
@@ -113,7 +114,7 @@ func (g *GroupService) AddTeacherToGroup(req *pb.AddTeacherReq) (*pb.AddTeacherR
 	return res, nil
 }
 
-func (g *GroupService) DeleteTeacherFromGroup(req *pb.DeleteTeacherReq) (*pb.DeleteResp, error) {
+func (g *GroupService) DeleteTeacherFromGroup(ctx context.Context, req *pb.DeleteTeacherReq) (*pb.DeleteResp, error) {
 	res, err := g.Storage.Group().DeleteTeacherFromGroup(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error deleting group: %v", err))
@@ -124,7 +125,7 @@ func (g *GroupService) DeleteTeacherFromGroup(req *pb.DeleteTeacherReq) (*pb.Del
 	return res, nil
 }
 
-func (g *GroupService) GetStudentGroups(req *pb.StudentId) (*pb.StudentGroups, error) {
+func (g *GroupService) GetStudentGroups(ctx context.Context, req *pb.StudentId) (*pb.StudentGroups, error) {
 	res, err := g.Storage.Group().GetStudentGroups(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error getting Student groups: %v", err))
@@ -135,7 +136,7 @@ func (g *GroupService) GetStudentGroups(req *pb.StudentId) (*pb.StudentGroups, e
 	return res, nil
 }
 
-func (g *GroupService) GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, error) {
+func (g *GroupService) GetTeacherGroups(ctx context.Context, req *pb.TeacherId) (*pb.TeacherGroups, error) {
 	res, err := g.Storage.Group().GetTeacherGroups(req)
 	if err != nil {
 		g.Logger.Error(fmt.Sprintf("Error getting Teacher groups: %v", err))

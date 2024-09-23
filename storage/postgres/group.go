@@ -62,7 +62,7 @@ func (G *groupImpl) UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, er
           name = $1, room = $2, start_time = $3, end_time = $4, started_at = $5
         WHERE 
           id = $6 AND deleted_at IS NULL`
-	_, err := G.DB.Exec(query, req.Name, req.Room, req.StartTime, req.EndTime, req.StartTime, req.Id)
+	_, err := G.DB.Exec(query, req.Name, req.Room, req.StartTime, req.EndTime, req.StartedAt, req.Id)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return nil, err

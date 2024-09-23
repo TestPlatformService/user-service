@@ -1,0 +1,7 @@
+time=2024-09-23T15:49:08.978+05:00 level=ERROR msg="pq: relation \"groups\" does not exist"
+time=2024-09-23T15:50:26.629+05:00 level=ERROR msg="pq: relation \"groups\" does not exist"
+time=2024-09-23T15:50:54.160+05:00 level=ERROR msg="pq: date/time field value out of range: \"22-04-2024\""
+time=2024-09-23T16:10:34.566+05:00 level=ERROR msg="pq: column \"deleted_at\" does not exist"
+time=2024-09-23T17:14:04.048+05:00 level=ERROR msg="pq: column \"deleted_at\" does not exist"
+time=2024-09-23T17:15:32.106+05:00 level=ERROR msg="pq: invalid input syntax for type timestamp: \"17:00\""
+time=2024-09-23T17:17:49.984+05:00 level=ERROR msg="pq: invalid input syntax for type timestamp: \"17:00\""
