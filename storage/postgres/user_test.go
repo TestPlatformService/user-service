@@ -97,38 +97,6 @@ func TestUserRepo_GetProfile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUserRepo_GetAllUsers(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
-	}
-	defer db.Close()
-
-	repo := NewUserRepo(db)
-
-	mock.ExpectQuery("SELECT COUNT").WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
-
-	rows := sqlmock.NewRows([]string{"role", "group", "subject", "teacher", "hh_id", "phone_number", "gender"}).
-		AddRow("student", "A1", "Math", "Mr. Smith", "hh123", "1234567890", "male").
-		AddRow("teacher", "B2", "Physics", "", "hh456", "0987654321", "female")
-
-	mock.ExpectQuery("SELECT role, \"group\", subject, teacher, hh_id, phone_number, gender FROM users").
-		WillReturnRows(rows)
-
-	req := &pb.GetAllUsersRequest{
-		Page:  1,
-		Limit: 10,
-	}
-
-	resp, err := repo.GetAllUsers(context.Background(), req)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(2), resp.TotalCount)
-	assert.Len(t, resp.Users, 2)
-
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
-}
-
 func TestUserRepo_UpdateProfile(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

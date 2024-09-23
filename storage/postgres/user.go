@@ -85,54 +85,50 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 }
 
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-	var allUsers pb.GetAllUsersResponse
-
-	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
-	var totalCount int64
-	err := u.DB.QueryRow(countQuery).Scan(&totalCount)
-	if err != nil {
-		u.Log.Error("Error while counting users", "error", err)
-		return nil, err
-	}
-	allUsers.TotalCount = totalCount
-
-	offset := (req.Page - 1) * req.Limit
-	if req.Page <= 0 {
-		offset = 0
-	}
-
+	// Query to get users with pagination (limit and offset) and filters (role, group, etc.)
 	query := `
-        SELECT role, "group", subject, teacher, hh_id, phone_number, gender 
-        FROM users 
-        WHERE deleted_at IS NULL 
-        ORDER BY created_at DESC 
-        LIMIT $1 OFFSET $2
-    `
+		SELECT hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth, id 
+		FROM users
+		WHERE role = COALESCE(NULLIF($1, ''), role)
+		AND "group" = COALESCE(NULLIF($2, ''), "group")
+		AND subject = COALESCE(NULLIF($3, ''), subject)
+		AND teacher = COALESCE(NULLIF($4, ''), teacher)
+		LIMIT $5 OFFSET $6
+	`
 
-	rows, err := u.DB.Query(query, req.Limit, offset)
+	rows, err := u.DB.Query(query, req.Users[0].Role, req.Users[0].Group, req.Users[0].Subject, req.Users[0].Teacher, req.Users[0].Limit, req.Users[0].Offset)
 	if err != nil {
-		u.Log.Error("Error fetching users", "error", err)
-		return nil, err
+		u.Log.Error("Error while fetching users", "error", err)
+		return nil, errors.ErrUnsupported
 	}
 	defer rows.Close()
 
+	var users []*pb.GetProfileResponse
 	for rows.Next() {
-		var user pb.AllUsers
-		err := rows.Scan(&user.Role, &user.Group, &user.Subject, &user.Teacher, &user.HhId, &user.PhoneNumber, &user.Gender)
+		var user pb.GetProfileResponse
+		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.Gender, &user.DateOfBirth, &user.Id)
 		if err != nil {
-			u.Log.Error("Error scanning user", "error", err)
-			return nil, err
+			u.Log.Error("Error scanning user data", "error", err)
+			return nil, errors.ErrUnsupported
 		}
-		allUsers.Users = append(allUsers.Users, &user)
+		users = append(users, &user)
 	}
 
-	if err := rows.Err(); err != nil {
-		u.Log.Error("Row iteration error", "error", err)
-		return nil, err
+	var totalCount int64
+	err = u.DB.QueryRow(`SELECT COUNT(*) FROM users`).Scan(&totalCount)
+	if err != nil {
+		u.Log.Error("Error while counting users", "error", err)
+		return nil, errors.ErrUnsupported
 	}
 
-	return &allUsers, nil
+	return &pb.GetAllUsersResponse{
+		Users:      users,
+		TotalCount: totalCount,
+		Page:       req.Users[0].Offset / req.Users[0].Limit + 1,
+		Limit:      req.Users[0].Limit,
+	}, nil
 }
+
 
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
 	query := `UPDATE users SET profile_image = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP 
