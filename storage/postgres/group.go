@@ -153,7 +153,7 @@ func (G *groupImpl) AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentResp
 			id, student_hh_id, group_id)
 		  VALUES
 			($1, $2, $3)`
-	_, err := G.DB.Exec(query, id, req.StudentId, req.GroupId)
+	_, err := G.DB.Exec(query, id, req.StudentHhId, req.GroupId)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return nil, err
@@ -170,7 +170,7 @@ func (G *groupImpl) DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.Delete
 			deleted_at = $1
 		  WHERE 
 			group_id = $2 AND student_hh_id = $3 AND deleted_at IS NULL`
-	_, err := G.DB.Exec(query, time.Now().String(), req.GroupId, req.UserId)
+	_, err := G.DB.Exec(query, time.Now().String(), req.GroupId, req.StudentHhId)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return &pb.DeleteResp{
