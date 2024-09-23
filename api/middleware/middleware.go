@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	auth "user/api/token"
-	pb "user/genproto/user"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
@@ -49,7 +48,7 @@ func (casb *casbinPermission) GetRole(c *gin.Context) (string, int) {
 	if token == "" {
 		return "unauthorized", http.StatusUnauthorized
 	}
-	role, err := auth.GetUserIdFromAccesToken(&pb.LoginResponse{Refresh: token})
+	_, role, err := auth.GetUserIdFromAccesToken(token)
 	if err != nil {
 		return "error while reding role", 500
 	}

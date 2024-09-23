@@ -2,6 +2,7 @@ package api
 
 import (
 	"user/api/handler"
+	"user/api/middleware"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -27,7 +28,7 @@ func Router(hand *handler.Handler) *gin.Engine {
 	}
 
 	user := router.Group("/user")
-	user.Use(mid)
+	user.Use(middleware.Check)
 	{
 		user.POST("/logout")
 		user.GET("/profile")
