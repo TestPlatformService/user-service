@@ -83,30 +83,104 @@ func Test_GetGroupById(t *testing.T) {
 	}
 }
 
-func Test_GetAllGroups(t *testing.T){
+func Test_GetAllGroups(t *testing.T) {
 	db := DB()
 	defer db.Close()
 
 	group := NewGroupRepo(db, logger)
 
 	_, err := group.GetAllGroups(&pb.GetAllGroupsReq{
-		Limit: 10,
+		Limit:  10,
 		Offset: 0,
 	})
-	if err != nil{
+	if err != nil {
 		t.Fatalf(err.Error())
 	}
 }
 
-func Test_AddStudentToGroup(t *testing.T){
+func Test_AddStudentToGroup(t *testing.T) {
 	db := DB()
 	defer db.Close()
 
 	group := NewGroupRepo(db, logger)
 
 	_, err := group.AddStudentToGroup(&pb.AddStudentReq{
-		GroupId: "de6419ff-85ab-45b1-8d09-9559896159b1",
-		StudentHhId: "hh123",
+		GroupId:     "4188773f-6e09-4d4a-9d21-0d593f29116f",
+		StudentHhId: "20388",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func Test_DeleteStudentFromGroup(t *testing.T) {
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.DeleteStudentFromGroup(&pb.DeleteStudentReq{
+		GroupId:     "4188773f-6e09-4d4a-9d21-0d593f29116f",
+		StudentHhId: "20388",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func Test_AddTeacherToGroup(t *testing.T) {
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.AddTeacherToGroup(&pb.AddTeacherReq{
+		GroupId:   "4188773f-6e09-4d4a-9d21-0d593f29116f",
+		TeacherId: "9abad94c-ab88-4191-92b8-fa98a2903400",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func Test_DeleteTeacherFromGroup(t *testing.T) {
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.DeleteTeacherFromGroup(&pb.DeleteTeacherReq{
+		Id:        "06535a29-4d85-4a11-8b72-978e263ad24a0",
+		GroupId:   "4188773f-6e09-4d4a-9d21-0d593f29116f",
+		TeacherId: "9abad94c-ab88-4191-92b8-fa98a2903400",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func Test_GetStudentGroups(t *testing.T) {
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.GetStudentGroups(&pb.StudentId{
+		HhId: "20388",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func Test_GetTeacherGroups(t *testing.T){
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.GetTeacherGroups(&pb.TeacherId{
+		Id: "9abad94c-ab88-4191-92b8-fa98a2903400",
 	})
 	if err != nil{
 		t.Fatalf(err.Error())
