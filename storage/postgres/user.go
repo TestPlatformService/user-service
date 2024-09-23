@@ -144,10 +144,10 @@ func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileReque
 }
 
 func (u *UserRepo) UpdateProfileAdmin(ctx context.Context, req *pb.UpdateProfileAdminRequest) (*pb.Void, error) {
-	query := `UPDATE users SET first_name = $1, last_name = $2, password_hash = $3, phone_number = $4, date_of_birth = $5, gender = $6, "group" = $7, updated_at = CURRENT_TIMESTAMP 
-	WHERE id = $8 AND deleted_at IS NULL`
+	query := `UPDATE users SET first_name = $1, last_name = $2, password_hash = $3, phone_number = $4, date_of_birth = $5, gender = $6, updated_at = CURRENT_TIMESTAMP 
+	WHERE id = $7 AND deleted_at IS NULL`
 
-	_, err := u.DB.Exec(query, req.Firstname, req.Lastname, req.Password, req.Phone, req.DateOfBirth, req.Gender, req.Group, req.Id)
+	_, err := u.DB.Exec(query, req.Firstname, req.Lastname, req.Password, req.Phone, req.DateOfBirth, req.Gender, req.Id)
 	if err != nil {
 		u.Log.Error("Error updating user by admin", "ID", req.Id, "error", err)
 		return nil, errors.New("failed to update user profile by admin")

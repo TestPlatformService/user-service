@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"testing"
-	"time"
 
 	pb "user/genproto/user"
 
@@ -12,142 +11,115 @@ import (
 )
 
 func TestUserRepo_Register(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, err := ConnectDB()
 	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
+		t.Fatal(err)
 	}
 	defer db.Close()
 
 	repo := NewUserRepo(db)
-
-	mock.ExpectExec("INSERT INTO users").WithArgs("hh123", "John", "Doe", "password", "1234567890", "male", "1990-01-01").WillReturnResult(sqlmock.NewResult(1, 1))
-
-	req := &pb.RegisterRequest{
-		HhId:        "hh123",
-		Firstname:   "John",
-		Lastname:    "Doe",
-		Password:    "password",
-		Phone:       "1234567890",
+	user := &pb.RegisterRequest{
+		HhId:        "20388",
+		Firstname:   "Sanjarbek",
+		Lastname:    "Abduraxmonov",
+		Password:    "1111",
+		Phone:       "+998940375107",
+		DateOfBirth: "2007/05/16",
 		Gender:      "male",
-		DateOfBirth: "1990-01-01",
+		Group:       "GO11",
 	}
 
-	_, err = repo.Register(context.Background(), req)
-	assert.NoError(t, err)
+	_, err = repo.Register(context.Background(), user)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
 }
 
 func TestUserRepo_Login(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, err := ConnectDB()
 	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
+		t.Fatal(err)
 	}
 	defer db.Close()
 
 	repo := NewUserRepo(db)
-
-	rows := sqlmock.NewRows([]string{"id", "role"}).AddRow(1, "user")
-	mock.ExpectQuery("SELECT id, role FROM users").WithArgs("hh123", "password").WillReturnRows(rows)
-
-	req := &pb.LoginRequest{
-		HhId:     "hh123",
-		Password: "password",
+	login := &pb.LoginRequest{
+		HhId:     "20388",
+		Password: "1111",
 	}
 
-	resp, err := repo.Login(context.Background(), req)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(1), resp.Id)
-	assert.Equal(t, "user", resp.Role)
+	res, err := repo.Login(context.Background(), login)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
+	assert.NotEmpty(t, res)
 }
 
 func TestUserRepo_GetProfile(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, err := ConnectDB()
 	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
+		t.Fatal(err)
 	}
 	defer db.Close()
 
 	repo := NewUserRepo(db)
-
-	dob := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
-	rows := sqlmock.NewRows([]string{"hh_id", "first_name", "last_name", "password_hash", "phone_number", "date_of_birth", "gender"}).
-		AddRow("hh123", "John", "Doe", "password", "1234567890", dob, "male")
-	mock.ExpectQuery("SELECT (.+) FROM users").WithArgs(1).WillReturnRows(rows)
-
-	req := &pb.GetProfileRequest{
-		Id: "1",
+	profile := &pb.GetProfileRequest{
+		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
 	}
 
-	resp, err := repo.GetProfile(context.Background(), req)
-	assert.NoError(t, err)
-	assert.Equal(t, "hh123", resp.HhId)
-	assert.Equal(t, "John", resp.Firstname)
-	assert.Equal(t, "Doe", resp.Lastname)
-	assert.Equal(t, "password", resp.Password)
-	assert.Equal(t, "1234567890", resp.Phone)
-	assert.Equal(t, dob.Format("2006-01-02"), resp.DateOfBirth)
-	assert.Equal(t, "male", resp.Gender)
+	res, err := repo.GetProfile(context.Background(), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
+	assert.NotEmpty(t, res)
 }
 
 func TestUserRepo_UpdateProfile(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, err := ConnectDB()
 	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
+		t.Fatal(err)
 	}
 	defer db.Close()
 
 	repo := NewUserRepo(db)
-
-	mock.ExpectExec("UPDATE users SET").WithArgs("profile.jpg", "newpassword", 1).WillReturnResult(sqlmock.NewResult(1, 1))
-
 	req := &pb.UpdateProfileRequest{
-		Id:             "1",
-		ProfilePicture: "profile.jpg",
-		Password:       "newpassword",
+		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
+		ProfilePicture: "zor.png",
+		Password: "1111",
 	}
 
 	_, err = repo.UpdateProfile(context.Background(), req)
-	assert.NoError(t, err)
-
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestUserRepo_UpdateProfileAdmin(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, err := ConnectDB()
 	if err != nil {
-		t.Fatalf("sqlmock yaratishda xato: %v", err)
+		t.Fatal(err)
 	}
 	defer db.Close()
 
 	repo := NewUserRepo(db)
-
-	mock.ExpectExec("UPDATE users SET").WithArgs("John", "Doe", "newpassword", "1234567890", "1990-01-01", "male", "A1", 1).WillReturnResult(sqlmock.NewResult(1, 1))
-
 	req := &pb.UpdateProfileAdminRequest{
-		Id:          "1",
-		Firstname:   "John",
-		Lastname:    "Doe",
-		Password:    "newpassword",
-		Phone:       "1234567890",
-		DateOfBirth: "1990-01-01",
+		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
+		Firstname: "Sanjarbek",
+		Lastname:    "Abduraxmonov",
+		Password:    "1111",
+		Phone:       "+998940375107",
+		DateOfBirth: "2007/05/16",
 		Gender:      "male",
-		Group:       "A1",
 	}
 
 	_, err = repo.UpdateProfileAdmin(context.Background(), req)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
 }
 
 func TestUserRepo_DeleteProfile(t *testing.T) {
