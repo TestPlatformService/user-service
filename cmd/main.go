@@ -10,6 +10,7 @@ import (
 	"user/service"
 	"user/storage/postgres"
 
+	"user/genproto/group"
 	"user/genproto/notification"
 	"user/genproto/user"
 
@@ -32,14 +33,14 @@ func main() {
 	istorage := postgres.NewIstorage(db)
 	service1 := service.NewUserService(db, logger, istorage)
 	service2 := service.NewNotificationsService(db, logger, istorage)
-	// service3 ...
+	service3 := service.NewGroupService(db, logger, istorage)
 
 	defer istorage.Close()
 
 	server := grpc.NewServer()
 	user.RegisterUsersServer(server, service1)
 	notification.RegisterNotificationsServer(server, service2)
-	//service3 ...
+	group.RegisterGroupServiceServer(server, service3)
 
 	log.Printf("Server listening at %v", lis.Addr())
 	go func() {
