@@ -6,7 +6,7 @@ CREATE TYPE days AS ENUM ('monday','tuesday','wednesday','thursday','friday','sa
 
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    hh_id VARCHAR(100) NOT NULL,
+    hh_id VARCHAR(100) UNIQUE NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     role roles NOT NULL DEFAULT 'student',
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS groups (
 
 CREATE TABLE IF NOT EXISTS student_groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_hh_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    student_hh_id varchar REFERENCES users(hh_id) ON DELETE CASCADE,
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
