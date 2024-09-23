@@ -12,6 +12,17 @@ import (
 )
 
 type GroupRepo interface {
+	CreateGroup(req *pb.CreateGroupReq) (*pb.CreateGroupResp, error)
+	UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error)
+	DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) 
+	GetGroupById(req *pb.GroupId) (*pb.Group, error)
+	GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp, error)
+	AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentResp, error)
+	DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.DeleteResp, error)
+	AddTeacherToGroup(req *pb.AddTeacherReq) (*pb.AddTeacherResp, error) 
+	DeleteTeacherFromGroup(req *pb.DeleteTeacherReq) (*pb.DeleteResp, error) 
+	GetStudentGroups(req *pb.StudentId) (*pb.StudentGroups, error) 
+	GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, error)
 }
 
 type groupImpl struct {
@@ -51,7 +62,7 @@ func (G *groupImpl) UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, er
           name = $1, room = $2, start_time = $3, end_time = $4, started_at = $5
         WHERE 
           id = $6 AND deleted_at IS NULL`
-	_, err := G.DB.Exec(query, req.Name, req.Room, req.StartTime, req.EndTime, req.StartTime, req.Id)
+	_, err := G.DB.Exec(query, req.Name, req.Room, req.StartTime, req.EndTime, req.StartedAt, req.Id)
 	if err != nil {
 		G.Logger.Error(err.Error())
 		return nil, err
