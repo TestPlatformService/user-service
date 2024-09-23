@@ -53,18 +53,18 @@ func ExtractRefreshClaim(tokenStr string) (*jwt.MapClaims, error) {
 	return &claims, nil
 }
 
-func GetUserIdFromRefreshToken(req *pb.LoginResponse) error {
+func GetUserIdFromRefreshToken(token string) (string, string, error) {
 	conf := config.Load()
-	refreshToken, err := jwt.Parse(req.Refresh, func(token *jwt.Token) (interface{}, error) { return []byte(conf.Token.REFRESH_KEY), nil })
-	if err != nil || !refreshToken.Valid {
-		return err
+	Refresh, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) { return []byte(conf.Token.ACCES_KEY), nil })
+	if err != nil || !Refresh.Valid {
+		return "", "", err
 	}
-	claims, ok := refreshToken.Claims.(jwt.MapClaims)
+	claims, ok := Refresh.Claims.(jwt.MapClaims)
 	if !ok {
-		return err
+		return "", "", err
 	}
-	req.Id = claims["user_id"].(string)
-	req.Role = claims["role"].(string)
+	id := claims["user_id"].(string)
+	role := claims["role"].(string)
 
-	return nil
+	return id, role, nil
 }

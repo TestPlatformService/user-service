@@ -56,18 +56,18 @@ func ExtractAccesClaim(tokenStr string) (*jwt.MapClaims, error) {
 	return &claims, nil
 }
 
-func GetUserIdFromAccesToken(req *pb.LoginResponse) error {
+func GetUserIdFromAccesToken(token string) (string, string, error) {
 	conf := config.Load()
-	AccesToken, err := jwt.Parse(req.Access, func(token *jwt.Token) (interface{}, error) { return []byte(conf.Token.ACCES_KEY), nil })
+	AccesToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) { return []byte(conf.Token.ACCES_KEY), nil })
 	if err != nil || !AccesToken.Valid {
-		return err
+		return "", "", err
 	}
 	claims, ok := AccesToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return err
+		return "", "", err
 	}
-	req.Id = claims["user_id"].(string)
-	req.Role = claims["role"].(string)
+	id := claims["user_id"].(string)
+	role := claims["role"].(string)
 
-	return nil
+	return id, role, nil
 }
