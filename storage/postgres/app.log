@@ -1,0 +1,7 @@
+time=2024-09-23T15:28:12.047+05:00 level=ERROR msg="Error while Registering" error="pq: invalid input value for enum genders: \"Male\""
+time=2024-09-23T15:31:15.704+05:00 level=ERROR msg="Error while Registering" error="pq: invalid input value for enum genders: \"Male\""
+time=2024-09-23T15:42:12.209+05:00 level=ERROR msg="Error while Registering" error="pq: duplicate key value violates unique constraint \"users_phone_number_key\""
+time=2024-09-23T15:43:39.537+05:00 level=ERROR msg="No user found" ID=20388
+time=2024-09-23T15:51:35.094+05:00 level=ERROR msg="Error updating user by admin" ID=1ffc468f-bac4-4935-aa7f-0159cc38e22f error="pq: column \"group\" of relation \"users\" does not exist"
+time=2024-09-23T16:01:07.833+05:00 level=ERROR msg="Error updating user by admin" ID=1ffc468f-bac4-4935-aa7f-0159cc38e22f error="pq: column \"group\" of relation \"users\" does not exist"
+time=2024-09-23T16:06:09.757+05:00 level=ERROR msg="Error updating user by admin" ID=1ffc468f-bac4-4935-aa7f-0159cc38e22f error="pq: column \"group\" of relation \"users\" does not exist"

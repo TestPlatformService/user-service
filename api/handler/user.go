@@ -34,3 +34,12 @@ func (h Handler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// Register godoc
+// @Summary Register user
+// @Description create new users
+// @Tags user
+// @Param info body user.RegisterReq true "User info"
+// @Success 200 {object} user.RegisterRes
+// @Failure 400 {object} string "Invalid data"
+// @Failure 500 {object} string "Server error"
+// @Router /user/register [post]
