@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	pb "user/genproto/group"
 	"user/storage"
-	"user/storage/postgres"
 )
 
 type GroupService struct {
@@ -15,9 +14,9 @@ type GroupService struct {
 	Logger  *slog.Logger
 }
 
-func NewGroupService(db *sql.DB, Logger *slog.Logger) *GroupService {
+func NewGroupService(db *sql.DB, Logger *slog.Logger, istorage storage.IStorage) *GroupService {
 	return &GroupService{
-		Storage: postgres.NewIstorage(db),
+		Storage: istorage,
 		Logger:  Logger,
 	}
 }
@@ -41,7 +40,7 @@ func (g *GroupService) UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp,
 		return nil, err
 	}
 	g.Logger.Info("UpdateGroup rpc method finished")
-	
+
 	return res, nil
 }
 
