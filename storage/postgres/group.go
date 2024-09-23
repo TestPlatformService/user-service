@@ -12,6 +12,17 @@ import (
 )
 
 type GroupRepo interface {
+	CreateGroup(req *pb.CreateGroupReq) (*pb.CreateGroupResp, error)
+	UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error)
+	DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) 
+	GetGroupById(req *pb.GroupId) (*pb.Group, error)
+	GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp, error)
+	AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentResp, error)
+	DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.DeleteResp, error)
+	AddTeacherToGroup(req *pb.AddTeacherReq) (*pb.AddTeacherResp, error) 
+	DeleteTeacherFromGroup(req *pb.DeleteTeacherReq) (*pb.DeleteResp, error) 
+	GetStudentGroups(req *pb.StudentId) (*pb.StudentGroups, error) 
+	GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, error)
 }
 
 type groupImpl struct {
