@@ -1,4 +1,4 @@
-CREATE TYPE roles AS ENUM ('admin','student','teacher','support');
+CREATE TYPE roles AS ENUM ('student','teacher','support');
 CREATE TYPE genders AS ENUM ('male','female');
 CREATE TYPE days AS ENUM ('monday','tuesday','wednesday','thursday','friday','saturday','sunday');
 
@@ -15,6 +15,20 @@ CREATE TABLE IF NOT EXISTS users (
     phone_number VARCHAR(20) UNIQUE NOT NULL,
     gender genders NOT NULL,
     date_of_birth DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    hh_id VARCHAR(100) UNIQUE NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role roles NOT NULL DEFAULT 'admin',
+    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20) UNIQUE NOT NULL,
+    gender genders NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL

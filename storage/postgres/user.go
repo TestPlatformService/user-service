@@ -43,8 +43,8 @@ func (u *UserRepo) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.V
 
 	// Insert the new user into the database
 	query := `
-        INSERT INTO users (hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO users (hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth, role, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `
 	_, err = u.DB.ExecContext(ctx, query,
 		req.HhId,
@@ -54,6 +54,7 @@ func (u *UserRepo) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.V
 		req.Phone,
 		req.Gender,
 		req.DateOfBirth,
+		req.Role,
 		time.Now(),
 		time.Now(),
 	)
@@ -66,25 +67,37 @@ func (u *UserRepo) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.V
 }
 
 func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+	var userID string
+	var hashedPassword string
+	var role string
 
-	var user pb.LoginResponse
-
-	query := `SELECT id, role 
-	FROM users 
-	WHERE hh_id = $1 and password_hash = $2 and deleted_at IS NULL`
-
-	err := u.DB.QueryRow(query, req.HhId, req.Password).Scan(&user.Id, &user.Role)
-	if err == sql.ErrNoRows {
-		u.Log.Error("No user found", "ID", req.HhId)
-		return nil, errors.New("no user found")
-	} else if err != nil {
-		u.Log.Error("Error getting user by ID", "err", err)
-		return nil, err
+	// Check if the user exists in the 'users' table
+	err := u.DB.QueryRowContext(ctx, "SELECT id, password_hash, role FROM users WHERE hh_id = $1", req.HhId).Scan(&userID, &hashedPassword, &role)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// User not found in the 'users' table, check 'admin' table
+			err = u.DB.QueryRowContext(ctx, "SELECT id, password, role FROM admin WHERE hh_id = $1", req.HhId).Scan(&userID, &hashedPassword, &role)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, fmt.Errorf("user with hh_id %s not found", req.HhId)
+				}
+				return nil, fmt.Errorf("error querying admin table: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("error querying users table: %w", err)
+		}
 	}
 
+	// Compare the provided password with the stored hashed password
+	err = comparePassword(hashedPassword, req.Password)
+	if err != nil {
+		return nil, fmt.Errorf("invalid password")
+	}
+
+	// Return the user's ID and role
 	return &pb.LoginResponse{
-		Id:   user.Id,
-		Role: user.Role,
+		Id:   userID,
+		Role: role,
 	}, nil
 }
 
@@ -373,4 +386,8 @@ func hashPassword(password string) (string, error) {
 		return "", fmt.Errorf("failed to hash password: %w", err)
 	}
 	return string(hashedPassword), nil
+}
+
+func comparePassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
