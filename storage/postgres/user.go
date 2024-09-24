@@ -4,10 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
+	"strings"
+	"time"
 	pb "user/genproto/user"
 	"user/logs"
 	"user/storage"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepo struct {
@@ -20,16 +25,43 @@ func NewUserRepo(DB *sql.DB) storage.IUserStorage {
 }
 
 func (u *UserRepo) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Void, error) {
-
-	query := `INSERT INTO users (hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7)`
-
-	_, err := u.DB.Exec(query, req.HhId, req.Firstname, req.Lastname, req.Password, req.Phone, req.Gender, req.DateOfBirth)
-
+	// Check if the phone number or hh_id already exists
+	var existingUserCount int
+	err := u.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM users WHERE phone_number = $1 OR hh_id = $2", req.Phone, req.HhId).Scan(&existingUserCount)
 	if err != nil {
-		u.Log.Error("Error while Registering", "error", err)
-		return nil, errors.ErrUnsupported
+		return nil, fmt.Errorf("failed to check existing users: %w", err)
+	}
+	if existingUserCount > 0 {
+		return nil, fmt.Errorf("user with this phone number or hh_id already exists")
 	}
 
+	// Hash the password
+	hashedPassword, err := hashPassword(req.Password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Insert the new user into the database
+	query := `
+        INSERT INTO users (hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `
+	_, err = u.DB.ExecContext(ctx, query,
+		req.HhId,
+		req.Firstname,
+		req.Lastname,
+		hashedPassword,
+		req.Phone,
+		req.Gender,
+		req.DateOfBirth,
+		time.Now(),
+		time.Now(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to register user: %w", err)
+	}
+
+	// Return success
 	return &pb.Void{}, nil
 }
 
@@ -85,72 +117,239 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 }
 
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-	// Query to get users with pagination (limit and offset) and filters (role, group, etc.)
-	query := `
-		SELECT hh_id, first_name, last_name, password_hash, phone_number, gender, date_of_birth, id 
-		FROM users
-		WHERE role = COALESCE(NULLIF($1, ''), role)
-		AND "group" = COALESCE(NULLIF($2, ''), "group")
-		AND subject = COALESCE(NULLIF($3, ''), subject)
-		AND teacher = COALESCE(NULLIF($4, ''), teacher)
-		LIMIT $5 OFFSET $6
-	`
+	// Start with base query
+	query := `SELECT hh_id, first_name, last_name, phone_number, date_of_birth, gender, id, role 
+		FROM users 
+		WHERE deleted_at IS NULL`
 
-	rows, err := u.DB.Query(query, req.Users[0].Role, req.Users[0].Group, req.Users[0].Subject, req.Users[0].Teacher, req.Users[0].Limit, req.Users[0].Offset)
+	// List of query parameters
+	var params []interface{}
+	var conditions []string
+	paramIndex := 1
+
+	// Filter by role
+	if req.Role != "" {
+		conditions = append(conditions, fmt.Sprintf("role = $%d", paramIndex))
+		params = append(params, req.Role)
+		paramIndex++
+	}
+
+	// Filter by group (join with groups if necessary)
+	if req.Group != "" {
+		query += ` JOIN student_groups sg ON sg.student_hh_id = users.hh_id 
+			 JOIN groups g ON g.id = sg.group_id`
+		conditions = append(conditions, fmt.Sprintf("g.name = $%d", paramIndex))
+		params = append(params, req.Group)
+		paramIndex++
+	}
+
+	// Filter by subject (assuming subject is linked to groups)
+	if req.Subject != "" {
+		query += ` JOIN groups g ON g.id = sg.group_id`
+		conditions = append(conditions, fmt.Sprintf("g.subject_id = $%d", paramIndex))
+		params = append(params, req.Subject)
+		paramIndex++
+	}
+
+	// Filter by teacher (join with teacher_groups)
+	if req.Teacher != "" {
+		query += ` JOIN teacher_groups tg ON tg.group_id = g.id`
+		conditions = append(conditions, fmt.Sprintf("tg.teacher_id = $%d", paramIndex))
+		params = append(params, req.Teacher)
+		paramIndex++
+	}
+
+	// Filter by hh_id
+	if req.HhId != "" {
+		conditions = append(conditions, fmt.Sprintf("hh_id = $%d", paramIndex))
+		params = append(params, req.HhId)
+		paramIndex++
+	}
+
+	// Filter by phone_number
+	if req.PhoneNumber != "" {
+		conditions = append(conditions, fmt.Sprintf("phone_number = $%d", paramIndex))
+		params = append(params, req.PhoneNumber)
+		paramIndex++
+	}
+
+	// Filter by gender
+	if req.Gender != "" {
+		conditions = append(conditions, fmt.Sprintf("gender = $%d", paramIndex))
+		params = append(params, req.Gender)
+		paramIndex++
+	}
+
+	// If there are conditions, append them to the query
+	if len(conditions) > 0 {
+		query += " AND " + strings.Join(conditions, " AND ")
+	}
+
+	// Add limit and offset for pagination
+	if req.Limit > 0 {
+		query += fmt.Sprintf(" LIMIT $%d", paramIndex)
+		params = append(params, req.Limit)
+		paramIndex++
+	}
+	if req.Offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", paramIndex)
+		params = append(params, req.Offset)
+		paramIndex++
+	}
+
+	// Execute the query
+	rows, err := u.DB.QueryContext(ctx, query, params...)
 	if err != nil {
-		u.Log.Error("Error while fetching users", "error", err)
-		return nil, errors.ErrUnsupported
+		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer rows.Close()
 
+	// Initialize response
 	var users []*pb.GetProfileResponse
 	for rows.Next() {
 		var user pb.GetProfileResponse
-		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.Gender, &user.DateOfBirth, &user.Id)
+		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role)
 		if err != nil {
-			u.Log.Error("Error scanning user data", "error", err)
-			return nil, errors.ErrUnsupported
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		users = append(users, &user)
 	}
 
+	// Get total count of users (without limit and offset)
 	var totalCount int64
-	err = u.DB.QueryRow(`SELECT COUNT(*) FROM users`).Scan(&totalCount)
+	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
+	if len(conditions) > 0 {
+		countQuery += " AND " + strings.Join(conditions, " AND ")
+	}
+	err = u.DB.QueryRowContext(ctx, countQuery, params[:len(params)-2]...).Scan(&totalCount)
 	if err != nil {
-		u.Log.Error("Error while counting users", "error", err)
-		return nil, errors.ErrUnsupported
+		return nil, fmt.Errorf("failed to get total count: %w", err)
 	}
 
+	// Return the response
 	return &pb.GetAllUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,
-		Page:       req.Users[0].Offset / req.Users[0].Limit + 1,
-		Limit:      req.Users[0].Limit,
+		Page:       req.Offset/req.Limit + 1,
+		Limit:      req.Limit,
 	}, nil
 }
 
-
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
-	query := `UPDATE users SET profile_image = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP 
-	WHERE id = $3 AND deleted_at IS NULL`
+	// Initialize the base query
+	query := "UPDATE users SET "
+	var params []interface{}
+	var setClauses []string
+	paramIndex := 1
 
-	_, err := u.DB.Exec(query, req.ProfilePicture, req.Password, req.Id)
-	if err != nil {
-		u.Log.Error("Error updating user profile", "ID", req.Id, "error", err)
-		return nil, errors.New("failed to update profile")
+	// Conditionally update profile picture if provided
+	if req.ProfilePicture != "" {
+		setClauses = append(setClauses, fmt.Sprintf("profile_image = $%d", paramIndex))
+		params = append(params, req.ProfilePicture)
+		paramIndex++
 	}
 
+	// Conditionally update password if provided
+	if req.Password != "" {
+		setClauses = append(setClauses, fmt.Sprintf("password_hash = $%d", paramIndex))
+		hashedPassword, err := hashPassword(req.Password) // Use the hashPassword function
+		if err != nil {
+			return nil, fmt.Errorf("failed to hash password: %w", err)
+		}
+		params = append(params, hashedPassword)
+		paramIndex++
+	}
+
+	// If no fields to update, return an error
+	if len(setClauses) == 0 {
+		return nil, fmt.Errorf("nothing to update")
+	}
+
+	// Append updated_at field
+	setClauses = append(setClauses, fmt.Sprintf("updated_at = $%d", paramIndex))
+	params = append(params, time.Now()) // Update the `updated_at` timestamp
+	paramIndex++
+
+	// Build the final query
+	query += strings.Join(setClauses, ", ") + fmt.Sprintf(" WHERE id = $%d", paramIndex)
+	params = append(params, req.Id)
+
+	// Execute the query
+	_, err := u.DB.ExecContext(ctx, query, params...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update profile: %w", err)
+	}
+
+	// Return a success response
 	return &pb.Void{}, nil
 }
 
 func (u *UserRepo) UpdateProfileAdmin(ctx context.Context, req *pb.UpdateProfileAdminRequest) (*pb.Void, error) {
-	query := `UPDATE users SET first_name = $1, last_name = $2, password_hash = $3, phone_number = $4, date_of_birth = $5, gender = $6, updated_at = CURRENT_TIMESTAMP 
-	WHERE id = $7 AND deleted_at IS NULL`
+	// Start building the query
+	query := "UPDATE users SET"
+	params := []interface{}{}
+	paramCounter := 1
 
-	_, err := u.DB.Exec(query, req.Firstname, req.Lastname, req.Password, req.Phone, req.DateOfBirth, req.Gender, req.Id)
+	// Update first name if provided
+	if req.Firstname != "" {
+		query += fmt.Sprintf(" first_name = $%d,", paramCounter)
+		params = append(params, req.Firstname)
+		paramCounter++
+	}
+
+	// Update last name if provided
+	if req.Lastname != "" {
+		query += fmt.Sprintf(" last_name = $%d,", paramCounter)
+		params = append(params, req.Lastname)
+		paramCounter++
+	}
+
+	// Update password if provided (and hash it)
+	if req.Password != "" {
+		hashedPassword, err := hashPassword(req.Password)
+		if err != nil {
+			return nil, fmt.Errorf("failed to hash password: %w", err)
+		}
+		query += fmt.Sprintf(" password_hash = $%d,", paramCounter)
+		params = append(params, hashedPassword)
+		paramCounter++
+	}
+
+	// Update phone number if provided
+	if req.Phone != "" {
+		query += fmt.Sprintf(" phone_number = $%d,", paramCounter)
+		params = append(params, req.Phone)
+		paramCounter++
+	}
+
+	// Update date of birth if provided
+	if req.DateOfBirth != "" {
+		query += fmt.Sprintf(" date_of_birth = $%d,", paramCounter)
+		params = append(params, req.DateOfBirth)
+		paramCounter++
+	}
+
+	// Update gender if provided
+	if req.Gender != "" {
+		query += fmt.Sprintf(" gender = $%d,", paramCounter)
+		params = append(params, req.Gender)
+		paramCounter++
+	}
+
+	// If no fields were updated, return an error
+	if paramCounter == 1 {
+		return nil, fmt.Errorf("no valid fields provided for update")
+	}
+
+	// Remove the trailing comma and add the WHERE clause
+	query = query[:len(query)-1]
+	query += fmt.Sprintf(" WHERE id = $%d", paramCounter)
+	params = append(params, req.Id)
+
+	// Execute the query
+	_, err := u.DB.ExecContext(ctx, query, params...)
 	if err != nil {
-		u.Log.Error("Error updating user by admin", "ID", req.Id, "error", err)
-		return nil, errors.New("failed to update user profile by admin")
+		return nil, fmt.Errorf("failed to update user profile: %w", err)
 	}
 
 	return &pb.Void{}, nil
@@ -166,4 +365,12 @@ func (u *UserRepo) DeleteProfile(ctx context.Context, req *pb.DeleteProfileReque
 	}
 
 	return &pb.Void{}, nil
+}
+
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("failed to hash password: %w", err)
+	}
+	return string(hashedPassword), nil
 }

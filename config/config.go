@@ -11,8 +11,6 @@ import (
 type Config struct {
 	Postgres PostgresConfig
 	Server   ServerConfig
-	Token    TokensConfig
-	Redis    RedisConfig
 }
 
 type PostgresConfig struct {
@@ -23,19 +21,8 @@ type PostgresConfig struct {
 	PDB_HOST     string
 }
 
-type RedisConfig struct {
-	RDB_ADDRESS  string
-	RDB_PASSWORD string
-}
-
 type ServerConfig struct {
 	USER_SERVICE string
-	USER_ROUTER  string
-}
-
-type TokensConfig struct {
-	ACCES_KEY   string
-	REFRESH_KEY string
 }
 
 func Load() *Config {
@@ -53,15 +40,6 @@ func Load() *Config {
 		},
 		Server: ServerConfig{
 			USER_SERVICE: cast.ToString(coalesce("USER_SERVICE", ":1234")),
-			USER_ROUTER:  cast.ToString(coalesce("USER_ROUTER", ":1234")),
-		},
-		Token: TokensConfig{
-			ACCES_KEY:   cast.ToString(coalesce("ACCES_KEY", "access_key")),
-			REFRESH_KEY: cast.ToString(coalesce("REFRESH_KEY", "refresh_key")),
-		},
-		Redis: RedisConfig{
-			RDB_ADDRESS:  cast.ToString(coalesce("RDB_ADDRESS", "localhost:6379")),
-			RDB_PASSWORD: cast.ToString(coalesce("RDB_PASSWORD", "")),
 		},
 	}
 }

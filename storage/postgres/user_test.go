@@ -85,9 +85,9 @@ func TestUserRepo_UpdateProfile(t *testing.T) {
 
 	repo := NewUserRepo(db)
 	req := &pb.UpdateProfileRequest{
-		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
+		Id:             "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
 		ProfilePicture: "zor.png",
-		Password: "1111",
+		Password:       "1111",
 	}
 
 	_, err = repo.UpdateProfile(context.Background(), req)
@@ -105,8 +105,8 @@ func TestUserRepo_UpdateProfileAdmin(t *testing.T) {
 
 	repo := NewUserRepo(db)
 	req := &pb.UpdateProfileAdminRequest{
-		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
-		Firstname: "Sanjarbek",
+		Id:          "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
+		Firstname:   "Sanjarbek",
 		Lastname:    "Abduraxmonov",
 		Password:    "1111",
 		Phone:       "+998940375107",

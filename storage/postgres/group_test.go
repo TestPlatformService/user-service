@@ -32,7 +32,7 @@ func Test_CreateGroup(t *testing.T) {
 		StartedAt: "2024-04-22",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -51,7 +51,7 @@ func Test_UpdateGroup(t *testing.T) {
 		StartedAt: "2023-10-10",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -65,7 +65,7 @@ func Test_DeleteGroup(t *testing.T) {
 		Id: "405965b2-3717-4f01-b331-693ddb4adf0a",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -79,7 +79,7 @@ func Test_GetGroupById(t *testing.T) {
 		Id: "de6419ff-85ab-45b1-8d09-9559896159b1",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -94,7 +94,7 @@ func Test_GetAllGroups(t *testing.T) {
 		Offset: 0,
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -109,7 +109,7 @@ func Test_AddStudentToGroup(t *testing.T) {
 		StudentHhId: "20389",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -124,7 +124,7 @@ func Test_DeleteStudentFromGroup(t *testing.T) {
 		StudentHhId: "20388",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -139,7 +139,7 @@ func Test_AddTeacherToGroup(t *testing.T) {
 		TeacherId: "9abad94c-ab88-4191-92b8-fa98a2903400",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -155,7 +155,7 @@ func Test_DeleteTeacherFromGroup(t *testing.T) {
 		TeacherId: "9abad94c-ab88-4191-92b8-fa98a2903400",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
@@ -169,11 +169,11 @@ func Test_GetStudentGroups(t *testing.T) {
 		HhId: "20388",
 	})
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
-func Test_GetTeacherGroups(t *testing.T){
+func Test_GetTeacherGroups(t *testing.T) {
 	db := DB()
 	defer db.Close()
 
@@ -182,8 +182,8 @@ func Test_GetTeacherGroups(t *testing.T){
 	_, err := group.GetTeacherGroups(&pb.TeacherId{
 		Id: "9abad94c-ab88-4191-92b8-fa98a2903400",
 	})
-	if err != nil{
-		t.Fatalf(err.Error())
+	if err != nil {
+		t.Fatal(err.Error())
 	}
 }
 
