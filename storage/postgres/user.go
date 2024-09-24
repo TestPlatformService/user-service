@@ -70,6 +70,7 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	var userID string
 	var hashedPassword string
 	var role string
+	var isAdmin bool
 
 	// Check if the user exists in the 'users' table
 	err := u.DB.QueryRowContext(ctx, "SELECT id, password_hash, role FROM users WHERE hh_id = $1", req.HhId).Scan(&userID, &hashedPassword, &role)
@@ -83,15 +84,24 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 				}
 				return nil, fmt.Errorf("error querying admin table: %w", err)
 			}
+			isAdmin = true
 		} else {
 			return nil, fmt.Errorf("error querying users table: %w", err)
 		}
 	}
 
-	// Compare the provided password with the stored hashed password
-	err = comparePassword(hashedPassword, req.Password)
-	if err != nil {
-		return nil, fmt.Errorf("invalid password")
+	// Compare passwords
+	if isAdmin {
+		// For admin, compare the plain text password (since it's not hashed)
+		if hashedPassword != req.Password {
+			return nil, fmt.Errorf("invalid password")
+		}
+	} else {
+		// For regular users, compare the hashed password
+		err = comparePassword(hashedPassword, req.Password)
+		if err != nil {
+			return nil, fmt.Errorf("invalid password")
+		}
 	}
 
 	// Return the user's ID and role
