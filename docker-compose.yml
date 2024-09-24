@@ -38,10 +38,16 @@ services:
     ports:
       - "50051:50051"
     networks:
-     - testuzb
+      - testuzb
     depends_on:
       - postgres-db
       - migrate
+    healthcheck:
+      test: ["CMD-SHELL", "grpc_health_probe -addr=:50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
 networks:
   testuzb:
