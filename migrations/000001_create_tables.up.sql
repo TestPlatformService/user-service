@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS admin (
     hh_id VARCHAR(100) UNIQUE NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    role roles NOT NULL DEFAULT 'admin',
+    role VARCHAR(5) NOT NULL DEFAULT 'admin',
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20) UNIQUE NOT NULL,
     gender genders NOT NULL,
