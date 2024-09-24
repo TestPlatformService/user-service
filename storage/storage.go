@@ -42,4 +42,5 @@ type IGroupStorage interface {
 	DeleteTeacherFromGroup(*pb2.DeleteTeacherReq) (*pb2.DeleteResp, error)
 	GetStudentGroups(*pb2.StudentId) (*pb2.StudentGroups, error)
 	GetTeacherGroups(*pb2.TeacherId) (*pb2.TeacherGroups, error)
+	GetGroupStudents(req *pb2.GroupId)(*pb2.GroupStudents, error)
 }

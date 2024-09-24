@@ -105,8 +105,8 @@ func Test_AddStudentToGroup(t *testing.T) {
 	group := NewGroupRepo(db, logger)
 
 	_, err := group.AddStudentToGroup(&pb.AddStudentReq{
-		GroupId:     "4188773f-6e09-4d4a-9d21-0d593f29116f",
-		StudentHhId: "20388",
+		GroupId:     "0272cf9c-fd83-4ab7-abe3-a6b1b543cc52",
+		StudentHhId: "20389",
 	})
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -184,5 +184,19 @@ func Test_GetTeacherGroups(t *testing.T){
 	})
 	if err != nil{
 		t.Fatalf(err.Error())
+	}
+}
+
+func Test_GetGroupStudents(t *testing.T){
+	db := DB()
+	defer db.Close()
+
+	group := NewGroupRepo(db, logger)
+
+	_, err := group.GetGroupStudents(&pb.GroupId{
+		Id: "0272cf9c-fd83-4ab7-abe3-a6b1b543cc52",
+	})
+	if err != nil{
+		t.Fatal(err)
 	}
 }

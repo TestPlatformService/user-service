@@ -19,14 +19,13 @@ func TestUserRepo_Register(t *testing.T) {
 
 	repo := NewUserRepo(db)
 	user := &pb.RegisterRequest{
-		HhId:        "20388",
+		HhId:        "20389",
 		Firstname:   "Sanjarbek",
 		Lastname:    "Abduraxmonov",
 		Password:    "1111",
-		Phone:       "+998940375107",
+		Phone:       "+998940375108",
 		DateOfBirth: "2007/05/16",
 		Gender:      "male",
-		Group:       "GO11",
 	}
 
 	_, err = repo.Register(context.Background(), user)

@@ -11,19 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type GroupRepo interface {
-	CreateGroup(req *pb.CreateGroupReq) (*pb.CreateGroupResp, error)
-	UpdateGroup(req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error)
-	DeleteGroup(req *pb.GroupId) (*pb.DeleteResp, error) 
-	GetGroupById(req *pb.GroupId) (*pb.Group, error)
-	GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp, error)
-	AddStudentToGroup(req *pb.AddStudentReq) (*pb.AddStudentResp, error)
-	DeleteStudentFromGroup(req *pb.DeleteStudentReq) (*pb.DeleteResp, error)
-	AddTeacherToGroup(req *pb.AddTeacherReq) (*pb.AddTeacherResp, error) 
-	DeleteTeacherFromGroup(req *pb.DeleteTeacherReq) (*pb.DeleteResp, error) 
-	GetStudentGroups(req *pb.StudentId) (*pb.StudentGroups, error) 
-	GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, error)
-}
 
 type groupImpl struct {
 	DB     *sql.DB
@@ -291,5 +278,38 @@ func (G *groupImpl) GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, erro
 	}
 	return &pb.TeacherGroups{
 		Groups: groups,
+	}, nil
+}
+
+func(G *groupImpl) GetGroupStudents(req *pb.GroupId)(*pb.GroupStudents, error){
+	students := []*pb.Student{}
+	query := `
+				SELECT 
+					U.id, U.hh_id, U.first_name, U.last_name, U.password_hash, U.phone_number, U.date_of_birth, U.gender, U.role
+				FROM 
+					users AS U
+				JOIN 
+					student_groups AS SG
+				ON 
+					U.hh_id = SG.student_hh_id
+				WHERE
+					SG.group_id = $1 AND SG.deleted_at IS NULL`
+	rows, err := G.DB.Query(query, req.Id)
+	if err != nil{
+		G.Logger.Error(err.Error())
+		return nil, err
+	}
+	for rows.Next(){
+		var student pb.Student
+		err = rows.Scan(&student.Id, &student.HhId, &student.Firstname, &student.Lastname, &student.Password, 
+			&student.Phone, &student.DateOfBirth, &student.Gender, &student.Role)
+		if err != nil{
+			G.Logger.Error(err.Error())
+			return nil, err
+		}
+		students = append(students, &student)
+	}
+	return &pb.GroupStudents{
+		Students: students,
 	}, nil
 }
