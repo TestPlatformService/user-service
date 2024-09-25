@@ -153,19 +153,15 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
         FROM users 
         WHERE deleted_at IS NULL`
 
-	// List of query parameters
 	var params []interface{}
 	var conditions []string
 	paramIndex := 1
 
-	// Filter by role
 	if req.Role != "" {
 		conditions = append(conditions, fmt.Sprintf("role = $%d", paramIndex))
 		params = append(params, req.Role)
 		paramIndex++
 	}
-
-	// Filter by group (join with groups if necessary)
 	if req.Group != "" {
 		query += ` JOIN student_groups sg ON sg.student_hh_id = users.hh_id 
                 JOIN groups g ON g.id = sg.group_id`
@@ -173,50 +169,36 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 		params = append(params, req.Group)
 		paramIndex++
 	}
-
-	// Filter by subject (assuming subject is linked to groups)
 	if req.Subject != "" {
 		query += ` JOIN groups g ON g.id = sg.group_id`
 		conditions = append(conditions, fmt.Sprintf("g.subject_id = $%d", paramIndex))
 		params = append(params, req.Subject)
 		paramIndex++
 	}
-
-	// Filter by teacher (join with teacher_groups)
 	if req.Teacher != "" {
 		query += ` JOIN teacher_groups tg ON tg.group_id = g.id`
 		conditions = append(conditions, fmt.Sprintf("tg.teacher_id = $%d", paramIndex))
 		params = append(params, req.Teacher)
 		paramIndex++
 	}
-
-	// Filter by hh_id
 	if req.HhId != "" {
 		conditions = append(conditions, fmt.Sprintf("hh_id = $%d", paramIndex))
 		params = append(params, req.HhId)
 		paramIndex++
 	}
-
-	// Filter by phone_number
 	if req.PhoneNumber != "" {
 		conditions = append(conditions, fmt.Sprintf("phone_number = $%d", paramIndex))
 		params = append(params, req.PhoneNumber)
 		paramIndex++
 	}
-
-	// Filter by gender
 	if req.Gender != "" {
 		conditions = append(conditions, fmt.Sprintf("gender = $%d", paramIndex))
 		params = append(params, req.Gender)
 		paramIndex++
 	}
-
-	// If there are conditions, append them to the query
 	if len(conditions) > 0 {
 		query += " AND " + strings.Join(conditions, " AND ")
 	}
-
-	// Add limit and offset for pagination
 	if req.Limit > 0 {
 		query += fmt.Sprintf(" LIMIT $%d", paramIndex)
 		params = append(params, req.Limit)
@@ -224,7 +206,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	}
 	if req.Offset > 0 {
 		query += fmt.Sprintf(" OFFSET $%d", paramIndex)
-		params = append(params, req.Offset)
+		params = append(params, (req.Offset-1)*req.Limit)
 		paramIndex++
 	}
 
@@ -239,40 +221,42 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	var users []*pb.GetProfileResponse
 	for rows.Next() {
 		var user pb.GetProfileResponse
-		var profileImage *string // Use a pointer to handle NULL values
+		var profileImage *string
 		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role, &profileImage)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 
 		if profileImage != nil {
-			user.Photo = *profileImage // Dereference if not NULL
+			user.Photo = *profileImage
 		} else {
-			user.Photo = "" // Or set to a default value
+			user.Photo = ""
 		}
 
 		users = append(users, &user)
 	}
 
-	// Get total count of users (without limit and offset)
-	var totalCount int64
+	// Prepare count query with conditions
 	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
-
-	// Ensure the count query uses the same conditions
 	if len(conditions) > 0 {
 		countQuery += " AND " + strings.Join(conditions, " AND ")
 	}
 
-	// Safely slice params for the count query
-	countParams := params
-	if len(params) >= 2 {
-		countParams = params[:len(params)-2] // Only slice if there are more than 2 params
+	// Only use the original params if there are conditions
+	var countParams []interface{}
+	if len(conditions) > 0 {
+		countParams = params // Use the full params if there are conditions
+	} else {
+		countParams = []interface{}{} // No params needed for count query
 	}
 
+	// Execute count query
+	var totalCount int64
 	err = u.DB.QueryRowContext(ctx, countQuery, countParams...).Scan(&totalCount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total count: %w", err)
 	}
+
 	return &pb.GetAllUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,

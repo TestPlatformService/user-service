@@ -153,10 +153,7 @@ func TestGetUserProfile(t *testing.T) {
 	}
 	defer db.Close()
 	con := NewUserRepo(db)
-	res, err := con.GetAllUsers(context.Background(), &pb.GetAllUsersRequest{
-		Limit:  10,
-		Offset: 0,
-	})
+	res, err := con.GetAllUsers(context.Background(), &pb.GetAllUsersRequest{})
 	if err != nil {
 		fmt.Println(err)
 	}
