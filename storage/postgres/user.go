@@ -113,18 +113,26 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*pb.GetProfileResponse, error) {
 	var user pb.GetProfileResponse
+	var profileImage *string // Use a pointer to handle NULL values
 
 	query := `SELECT hh_id, first_name, last_name, password_hash, phone_number, date_of_birth, gender, profile_image 
 	FROM users 
 	WHERE id = $1 AND deleted_at IS NULL`
 
-	err := u.DB.QueryRow(query, req.Id).Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Photo)
+	err := u.DB.QueryRow(query, req.Id).Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.DateOfBirth, &user.Gender, &profileImage)
 	if err == sql.ErrNoRows {
 		u.Log.Error("No user found", "ID", req.Id)
 		return nil, errors.New("no user found")
 	} else if err != nil {
 		u.Log.Error("Error getting user by ID", "err", err)
 		return nil, err
+	}
+
+	// Handle the case where profile_image might be NULL
+	if profileImage != nil {
+		user.Photo = *profileImage // Dereference if not NULL
+	} else {
+		user.Photo = "" // Or set to a default value
 	}
 
 	return &pb.GetProfileResponse{
@@ -141,7 +149,6 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 }
 
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-	// Start with base query
 	query := `SELECT hh_id, first_name, last_name, phone_number, date_of_birth, gender, id, role, profile_image 
         FROM users 
         WHERE deleted_at IS NULL`
@@ -232,10 +239,18 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	var users []*pb.GetProfileResponse
 	for rows.Next() {
 		var user pb.GetProfileResponse
-		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role, &user.Photo)
+		var profileImage *string // Use a pointer to handle NULL values
+		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role, &profileImage)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+
+		if profileImage != nil {
+			user.Photo = *profileImage // Dereference if not NULL
+		} else {
+			user.Photo = "" // Or set to a default value
+		}
+
 		users = append(users, &user)
 	}
 
@@ -258,8 +273,6 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total count: %w", err)
 	}
-
-	// Return the response
 	return &pb.GetAllUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,
