@@ -142,8 +142,8 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
 	// Start with base query
 	query := `SELECT hh_id, first_name, last_name, phone_number, date_of_birth, gender, id, role 
-		FROM users 
-		WHERE deleted_at IS NULL`
+        FROM users 
+        WHERE deleted_at IS NULL`
 
 	// List of query parameters
 	var params []interface{}
@@ -160,7 +160,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	// Filter by group (join with groups if necessary)
 	if req.Group != "" {
 		query += ` JOIN student_groups sg ON sg.student_hh_id = users.hh_id 
-			 JOIN groups g ON g.id = sg.group_id`
+                JOIN groups g ON g.id = sg.group_id`
 		conditions = append(conditions, fmt.Sprintf("g.name = $%d", paramIndex))
 		params = append(params, req.Group)
 		paramIndex++
@@ -241,10 +241,19 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	// Get total count of users (without limit and offset)
 	var totalCount int64
 	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
+
+	// Ensure the count query uses the same conditions
 	if len(conditions) > 0 {
 		countQuery += " AND " + strings.Join(conditions, " AND ")
 	}
-	err = u.DB.QueryRowContext(ctx, countQuery, params[:len(params)-2]...).Scan(&totalCount)
+
+	// Safely slice params for the count query
+	countParams := params
+	if len(params) >= 2 {
+		countParams = params[:len(params)-2] // Only slice if there are more than 2 params
+	}
+
+	err = u.DB.QueryRowContext(ctx, countQuery, countParams...).Scan(&totalCount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total count: %w", err)
 	}
