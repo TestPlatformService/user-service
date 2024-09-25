@@ -114,11 +114,11 @@ func (u *UserRepo) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*pb.GetProfileResponse, error) {
 	var user pb.GetProfileResponse
 
-	query := `SELECT hh_id, first_name, last_name, password_hash, phone_number, date_of_birth, gender 
+	query := `SELECT hh_id, first_name, last_name, password_hash, phone_number, date_of_birth, gender, profile_image 
 	FROM users 
-	WHERE id = $1 and deleted_at IS NULL`
+	WHERE id = $1 AND deleted_at IS NULL`
 
-	err := u.DB.QueryRow(query, req.Id).Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.DateOfBirth, &user.Gender)
+	err := u.DB.QueryRow(query, req.Id).Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Password, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Photo)
 	if err == sql.ErrNoRows {
 		u.Log.Error("No user found", "ID", req.Id)
 		return nil, errors.New("no user found")
@@ -135,13 +135,14 @@ func (u *UserRepo) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*
 		Phone:       user.Phone,
 		DateOfBirth: user.DateOfBirth,
 		Gender:      user.Gender,
-		Id:          user.Id,
+		Id:          req.Id,
+		Photo:       user.Photo, // Ensure photo is included
 	}, nil
 }
 
 func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
 	// Start with base query
-	query := `SELECT hh_id, first_name, last_name, phone_number, date_of_birth, gender, id, role 
+	query := `SELECT hh_id, first_name, last_name, phone_number, date_of_birth, gender, id, role, profile_image 
         FROM users 
         WHERE deleted_at IS NULL`
 
@@ -231,7 +232,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	var users []*pb.GetProfileResponse
 	for rows.Next() {
 		var user pb.GetProfileResponse
-		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role)
+		err := rows.Scan(&user.HhId, &user.Firstname, &user.Lastname, &user.Phone, &user.DateOfBirth, &user.Gender, &user.Id, &user.Role, &user.Photo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
@@ -262,7 +263,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	return &pb.GetAllUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,
-		Page:       req.Offset/req.Limit + 1,
+		Page:       (req.Offset - 1) * req.Limit,
 		Limit:      req.Limit,
 	}, nil
 }
