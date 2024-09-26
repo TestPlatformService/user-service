@@ -427,3 +427,20 @@ func (u *UserRepo) UploadPhoto(ctx context.Context, req *pb.UploadPhotoRequest) 
 	// Return success
 	return &pb.Void{}, nil
 }
+
+func (u *UserRepo) DeletePhoto(ctx context.Context, req *pb.DeletePhotoRequest) (*pb.Void, error) {
+	// Validate that the user ID is provided
+	if req.Id == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+
+	// Update the user's profile_image to NULL
+	query := `UPDATE users SET profile_image = NULL, updated_at = $1 WHERE id = $2 AND deleted_at IS NULL`
+	_, err := u.DB.ExecContext(ctx, query, time.Now(), req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete profile image: %w", err)
+	}
+
+	// Return success
+	return &pb.Void{}, nil
+}

@@ -23,6 +23,7 @@ type IUserStorage interface {
 	UpdateProfileAdmin(context.Context, *pb.UpdateProfileAdminRequest) (*pb.Void, error)
 	DeleteProfile(context.Context, *pb.DeleteProfileRequest) (*pb.Void, error)
 	UploadPhoto(context.Context, *pb.UploadPhotoRequest) (*pb.Void, error)
+	DeletePhoto(context.Context, *pb.DeletePhotoRequest) (*pb.Void, error)
 }
 
 type INotificationStorage interface {
