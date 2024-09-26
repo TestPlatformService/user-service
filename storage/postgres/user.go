@@ -266,51 +266,50 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 }
 
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
-	// Initialize the base query
-	query := "UPDATE users SET "
-	var params []interface{}
-	var setClauses []string
-	paramIndex := 1
-
-	// Conditionally update profile picture if provided
-	if req.ProfilePicture != "" {
-		setClauses = append(setClauses, fmt.Sprintf("profile_image = $%d", paramIndex))
-		params = append(params, req.ProfilePicture)
-		paramIndex++
+	if req.Id == "" {
+		return nil, fmt.Errorf("user ID is required")
 	}
 
-	// Conditionally update password if provided
+	// Initialize the query parts
+	query := `UPDATE users SET `
+	var params []interface{}
+	var updates []string
+	paramIndex := 1
+
+	// Check if password is provided
 	if req.Password != "" {
-		setClauses = append(setClauses, fmt.Sprintf("password_hash = $%d", paramIndex))
-		hashedPassword, err := hashPassword(req.Password) // Use the hashPassword function
+		// Hash the new password
+		hashedPassword, err := hashPassword(req.Password) // Assume `hashPassword` is a function to hash the password
 		if err != nil {
 			return nil, fmt.Errorf("failed to hash password: %w", err)
 		}
+		updates = append(updates, fmt.Sprintf("password_hash = $%d", paramIndex))
 		params = append(params, hashedPassword)
 		paramIndex++
 	}
 
-	// If no fields to update, return an error
-	if len(setClauses) == 0 {
-		return nil, fmt.Errorf("nothing to update")
-	}
-
-	// Append updated_at field
-	setClauses = append(setClauses, fmt.Sprintf("updated_at = $%d", paramIndex))
-	params = append(params, time.Now()) // Update the `updated_at` timestamp
+	// Always update the updated_at field
+	updates = append(updates, fmt.Sprintf("updated_at = $%d", paramIndex))
+	params = append(params, time.Now())
 	paramIndex++
 
-	// Build the final query
-	query += strings.Join(setClauses, ", ") + fmt.Sprintf(" WHERE id = $%d", paramIndex)
-	params = append(params, req.Id)
-
-	// Execute the query
-	_, err := u.DB.ExecContext(ctx, query, params...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update profile: %w", err)
+	// Ensure there are updates to be made
+	if len(updates) == 0 {
+		return nil, fmt.Errorf("no updates provided")
 	}
 
-	// Return a success response
+	// Complete the query
+	query += strings.Join(updates, ", ")
+	query += fmt.Sprintf(" WHERE id = $%d AND deleted_at IS NULL", paramIndex)
+	params = append(params, req.Id)
+
+	// Execute the update query
+	_, err := u.DB.ExecContext(ctx, query, params...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update user profile: %w", err)
+	}
+
+	// Return success
 	return &pb.Void{}, nil
 }
 
@@ -407,4 +406,24 @@ func hashPassword(password string) (string, error) {
 
 func comparePassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+func (u *UserRepo) UploadPhoto(ctx context.Context, req *pb.UploadPhotoRequest) (*pb.Void, error) {
+	// Validate that both user ID and photo are provided
+	if req.Id == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+	if req.Photo == "" {
+		return nil, fmt.Errorf("photo is required")
+	}
+
+	// Update the user's profile_image in the database
+	query := `UPDATE users SET profile_image = $1, updated_at = $2 WHERE id = $3 AND deleted_at IS NULL`
+	_, err := u.DB.ExecContext(ctx, query, req.Photo, time.Now(), req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update profile image: %w", err)
+	}
+
+	// Return success
+	return &pb.Void{}, nil
 }

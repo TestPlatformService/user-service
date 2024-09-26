@@ -22,6 +22,7 @@ type IUserStorage interface {
 	UpdateProfile(context.Context, *pb.UpdateProfileRequest) (*pb.Void, error)
 	UpdateProfileAdmin(context.Context, *pb.UpdateProfileAdminRequest) (*pb.Void, error)
 	DeleteProfile(context.Context, *pb.DeleteProfileRequest) (*pb.Void, error)
+	UploadPhoto(context.Context, *pb.UploadPhotoRequest) (*pb.Void, error)
 }
 
 type INotificationStorage interface {
@@ -42,5 +43,5 @@ type IGroupStorage interface {
 	DeleteTeacherFromGroup(*pb2.DeleteTeacherReq) (*pb2.DeleteResp, error)
 	GetStudentGroups(*pb2.StudentId) (*pb2.StudentGroups, error)
 	GetTeacherGroups(*pb2.TeacherId) (*pb2.TeacherGroups, error)
-	GetGroupStudents(req *pb2.GroupId)(*pb2.GroupStudents, error)
+	GetGroupStudents(req *pb2.GroupId) (*pb2.GroupStudents, error)
 }

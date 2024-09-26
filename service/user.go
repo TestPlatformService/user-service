@@ -96,3 +96,13 @@ func (s *UserService) DeleteProfile(ctx context.Context, req *pb.DeleteProfileRe
 
 	return &pb.Void{}, nil
 }
+
+func (s *UserService) UploadPhoto(ctx context.Context, req *pb.UploadPhotoRequest) (*pb.Void, error) {
+	_, err := s.User.User().UploadPhoto(ctx, req)
+	if err != nil {
+		s.Logger.Error("Failed to upload photo", "error", err)
+		return nil, err
+	}
+
+	return &pb.Void{}, nil
+}
