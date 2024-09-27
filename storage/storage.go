@@ -30,6 +30,7 @@ type INotificationStorage interface {
 	CreateNotifications(context.Context, *pb1.CreateNotificationsReq) (*pb1.CreateNotificationsRes, error)
 	GetAllNotifications(context.Context, *pb1.GetNotificationsReq) (*pb1.GetNotificationsResponse, error)
 	GetAndMarkNotificationAsRead(context.Context, *pb1.GetAndMarkNotificationAsReadReq) (*pb1.GetAndMarkNotificationAsReadRes, error)
+	MarkNotificationAsRead(context.Context, *pb1.MarkNotificationAsReadReq) (*pb1.Void, error)
 }
 
 type IGroupStorage interface {
