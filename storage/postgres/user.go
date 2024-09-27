@@ -242,13 +242,6 @@ func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileReque
 	var setClauses []string
 	paramIndex := 1
 
-	// Conditionally update profile picture if provided
-	if req.ProfilePicture != "" {
-		setClauses = append(setClauses, fmt.Sprintf("profile_image = $%d", paramIndex))
-		params = append(params, req.ProfilePicture)
-		paramIndex++
-	}
-
 	// Conditionally update password if provided
 	if req.Password != "" {
 		setClauses = append(setClauses, fmt.Sprintf("password_hash = $%d", paramIndex))

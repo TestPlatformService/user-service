@@ -86,7 +86,6 @@ func TestUserRepo_UpdateProfile(t *testing.T) {
 	repo := NewUserRepo(db)
 	req := &pb.UpdateProfileRequest{
 		Id:             "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
-		ProfilePicture: "zor.png",
 		Password:       "1111",
 	}
 
