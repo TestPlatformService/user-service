@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	pb "user/genproto/user"
@@ -26,6 +27,7 @@ func TestUserRepo_Register(t *testing.T) {
 		Phone:       "+998940375108",
 		DateOfBirth: "2007/05/16",
 		Gender:      "male",
+		Role:        "student",
 	}
 
 	_, err = repo.Register(context.Background(), user)
@@ -65,7 +67,7 @@ func TestUserRepo_GetProfile(t *testing.T) {
 
 	repo := NewUserRepo(db)
 	profile := &pb.GetProfileRequest{
-		Id: "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
+		Id: "b4f3ec7d-90ec-47bc-b06d-97de814b3267",
 	}
 
 	res, err := repo.GetProfile(context.Background(), profile)
@@ -74,6 +76,7 @@ func TestUserRepo_GetProfile(t *testing.T) {
 	}
 
 	assert.NotEmpty(t, res)
+	fmt.Println(res)
 }
 
 func TestUserRepo_UpdateProfile(t *testing.T) {
@@ -87,6 +90,7 @@ func TestUserRepo_UpdateProfile(t *testing.T) {
 	req := &pb.UpdateProfileRequest{
 		Id:             "1ffc468f-bac4-4935-aa7f-0159cc38e22f",
 		Password:       "1111",
+
 	}
 
 	_, err = repo.UpdateProfile(context.Background(), req)
@@ -140,4 +144,19 @@ func TestUserRepo_DeleteProfile(t *testing.T) {
 
 	err = mock.ExpectationsWereMet()
 	assert.NoError(t, err)
+}
+
+func TestGetUserProfile(t *testing.T) {
+	db, err := ConnectDB()
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	con := NewUserRepo(db)
+	res, err := con.GetAllUsers(context.Background(), &pb.GetAllUsersRequest{})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(res)
 }

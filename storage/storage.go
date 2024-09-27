@@ -22,12 +22,15 @@ type IUserStorage interface {
 	UpdateProfile(context.Context, *pb.UpdateProfileRequest) (*pb.Void, error)
 	UpdateProfileAdmin(context.Context, *pb.UpdateProfileAdminRequest) (*pb.Void, error)
 	DeleteProfile(context.Context, *pb.DeleteProfileRequest) (*pb.Void, error)
+	UploadPhoto(context.Context, *pb.UploadPhotoRequest) (*pb.Void, error)
+	DeletePhoto(context.Context, *pb.DeletePhotoRequest) (*pb.Void, error)
 }
 
 type INotificationStorage interface {
 	CreateNotifications(context.Context, *pb1.CreateNotificationsReq) (*pb1.CreateNotificationsRes, error)
 	GetAllNotifications(context.Context, *pb1.GetNotificationsReq) (*pb1.GetNotificationsResponse, error)
 	GetAndMarkNotificationAsRead(context.Context, *pb1.GetAndMarkNotificationAsReadReq) (*pb1.GetAndMarkNotificationAsReadRes, error)
+	MarkNotificationAsRead(context.Context, *pb1.MarkNotificationAsReadReq) (*pb1.Void, error)
 }
 
 type IGroupStorage interface {

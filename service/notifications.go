@@ -54,3 +54,14 @@ func (s *NotificationsService) GetAndMarkNotificationAsRead(ctx context.Context,
 	s.Logger.Info("GetAndMarkNotificationAsRead rpc method finished")
 	return resp, nil
 }
+
+func (s *NotificationsService) MarkNotificationAsRead(ctx context.Context, req *pb.MarkNotificationAsReadReq) (*pb.Void, error) {
+	s.Logger.Info("MarkNotificationAsRead rpc method is working")
+	_, err := s.Storage.Notifications().MarkNotificationAsRead(ctx, req)
+	if err != nil {
+		s.Logger.Error(fmt.Sprintf("Error marking notification as read: %v", err))
+		return nil, err
+	}
+	s.Logger.Info("MarkNotificationAsRead rpc method finished")
+	return &pb.Void{}, nil
+}

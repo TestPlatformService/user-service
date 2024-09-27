@@ -32,7 +32,7 @@ func (r *NotificationsRepository) CreateNotifications(ctx context.Context, req *
 
 func (r *NotificationsRepository) GetAllNotifications(ctx context.Context, req *pb.GetNotificationsReq) (*pb.GetNotificationsResponse, error) {
 	rows, err := r.Db.QueryContext(ctx, `
-		SELECT id, user_id, messages, created_at 
+		SELECT id, user_id, messages, is_read ,created_at 
 		FROM notifications 
 		WHERE user_id = $1`, req.GetUserId())
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *NotificationsRepository) GetAllNotifications(ctx context.Context, req *
 	var notifications []*pb.Notification
 	for rows.Next() {
 		var notification pb.Notification
-		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.Message, &notification.Date); err != nil {
+		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.Message, &notification.Read, &notification.Date); err != nil {
 			return nil, fmt.Errorf("failed to scan notification: %w", err)
 		}
 		notifications = append(notifications, &notification)
@@ -100,4 +100,16 @@ func (r *NotificationsRepository) GetAndMarkNotificationAsRead(ctx context.Conte
 	}
 
 	return &pb.GetAndMarkNotificationAsReadRes{Notifications: notifications}, nil
+}
+
+func (r *NotificationsRepository) MarkNotificationAsRead(ctx context.Context, req *pb.MarkNotificationAsReadReq) (*pb.Void, error) {
+	_, err := r.Db.ExecContext(ctx, `
+        UPDATE notifications 
+        SET is_read = TRUE 
+        WHERE id = $1`, req.GetNotificationId())
+	if err != nil {
+		return nil, fmt.Errorf("failed to update notification %s: %w", req.GetNotificationId(), err)
+	}
+
+	return &pb.Void{}, nil
 }
