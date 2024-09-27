@@ -43,4 +43,6 @@ type IGroupStorage interface {
 	GetStudentGroups(*pb2.StudentId) (*pb2.StudentGroups, error)
 	GetTeacherGroups(*pb2.TeacherId) (*pb2.TeacherGroups, error)
 	GetGroupStudents(req *pb2.GroupId)(*pb2.GroupStudents, error)
+	CreateGroupDay(req *pb2.CreateGroupDayReq) (*pb2.CreateGroupDayResp, error)
+	DeleteGroupDay(req *pb2.DeleteGroupDayReq) (*pb2.DeleteGroupDayResp, error)
 }

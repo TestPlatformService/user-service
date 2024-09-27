@@ -146,3 +146,33 @@ func (g *GroupService) GetTeacherGroups(ctx context.Context, req *pb.TeacherId) 
 
 	return res, nil
 }
+
+func (g *GroupService) GetGroupStudents(ctx context.Context, req *pb.GroupId) (*pb.GroupStudents, error){
+	resp, err := g.Storage.Group().GetGroupStudents(req)
+	if err != nil{
+		g.Logger.Error(fmt.Sprintf("Error getting group students: %v", err))
+		return nil, err
+	}
+	g.Logger.Info("GetGroupStudents rpc method finished")
+	return resp, nil
+}
+
+func (g *GroupService) CreateGroupDay(ctx context.Context, req *pb.CreateGroupDayReq) (*pb.CreateGroupDayResp, error){
+	resp, err := g.Storage.Group().CreateGroupDay(req)
+	if err != nil{
+		g.Logger.Error(fmt.Sprintf("Error create group day: %v", err))
+		return nil, err
+	}
+	g.Logger.Info("CreateGroupDay rpc method finished")
+	return resp, nil
+}
+
+func (g *GroupService) DeleteGroupDay(ctx context.Context, req *pb.DeleteGroupDayReq) (*pb.DeleteGroupDayResp, error){
+	resp, err := g.Storage.Group().DeleteGroupDay(req)
+	if err != nil{
+		g.Logger.Error(fmt.Sprintf("Error delete group day: %v", err))
+		return nil, err
+	}
+	g.Logger.Info("DeleteGroupDay rpc method finishid")
+	return resp, nil
+}

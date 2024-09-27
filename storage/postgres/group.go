@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type groupImpl struct {
 	DB     *sql.DB
 	Logger *slog.Logger
@@ -281,7 +280,7 @@ func (G *groupImpl) GetTeacherGroups(req *pb.TeacherId) (*pb.TeacherGroups, erro
 	}, nil
 }
 
-func(G *groupImpl) GetGroupStudents(req *pb.GroupId)(*pb.GroupStudents, error){
+func (G *groupImpl) GetGroupStudents(req *pb.GroupId) (*pb.GroupStudents, error) {
 	students := []*pb.Student{}
 	query := `
 				SELECT 
@@ -295,15 +294,15 @@ func(G *groupImpl) GetGroupStudents(req *pb.GroupId)(*pb.GroupStudents, error){
 				WHERE
 					SG.group_id = $1 AND SG.deleted_at IS NULL`
 	rows, err := G.DB.Query(query, req.Id)
-	if err != nil{
+	if err != nil {
 		G.Logger.Error(err.Error())
 		return nil, err
 	}
-	for rows.Next(){
+	for rows.Next() {
 		var student pb.Student
-		err = rows.Scan(&student.Id, &student.HhId, &student.Firstname, &student.Lastname, &student.Password, 
+		err = rows.Scan(&student.Id, &student.HhId, &student.Firstname, &student.Lastname, &student.Password,
 			&student.Phone, &student.DateOfBirth, &student.Gender, &student.Role)
-		if err != nil{
+		if err != nil {
 			G.Logger.Error(err.Error())
 			return nil, err
 		}
@@ -311,5 +310,39 @@ func(G *groupImpl) GetGroupStudents(req *pb.GroupId)(*pb.GroupStudents, error){
 	}
 	return &pb.GroupStudents{
 		Students: students,
+	}, nil
+}
+
+func (G *groupImpl) CreateGroupDay(req *pb.CreateGroupDayReq) (*pb.CreateGroupDayResp, error) {
+	id := uuid.NewString()
+	query := `
+				INSERT INTO group_days(
+					id, group_id, day)
+				VALUES
+					($1, $2, $3)`
+	_, err := G.DB.Exec(query, id, req.GropId, req.Day)
+	if err != nil {
+		G.Logger.Error(err.Error())
+		return nil, err
+	}
+	return &pb.CreateGroupDayResp{
+		Id: id,
+	}, nil
+}
+
+func (G *groupImpl) DeleteGroupDay(req *pb.DeleteGroupDayReq) (*pb.DeleteGroupDayResp, error) {
+	query := `
+				DELETE FROM group_days
+					WHERE
+				id = $1`
+	_, err := G.DB.Exec(query, req.Id)
+	if err != nil {
+		G.Logger.Error(err.Error())
+		return &pb.DeleteGroupDayResp{
+			Status: "O'chirilmadi",
+		}, err
+	}
+	return &pb.DeleteGroupDayResp{
+		Status: "Muvaffaqiyatli o'chirildi",
 	}, nil
 }
