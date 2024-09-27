@@ -43,7 +43,7 @@ func (r *NotificationsRepository) GetAllNotifications(ctx context.Context, req *
 	var notifications []*pb.Notification
 	for rows.Next() {
 		var notification pb.Notification
-		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.Message, &notification.Date); err != nil {
+		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.Message, &notification.Read, &notification.Date); err != nil {
 			return nil, fmt.Errorf("failed to scan notification: %w", err)
 		}
 		notifications = append(notifications, &notification)
