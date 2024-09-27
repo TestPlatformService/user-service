@@ -267,10 +267,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 
 func (u *UserRepo) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Void, error) {
 	// Initialize the base query
-	query := "UPDATE users SET "
-	var params []interface{}
-	var setClauses []string
-	paramIndex := 1
+
 
 	// Conditionally update password if provided
 	if req.Id == "" {
