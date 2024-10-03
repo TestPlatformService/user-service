@@ -120,7 +120,7 @@ func (G *groupImpl) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp,
 	if len(req.Room) > 0 {
 		query += fmt.Sprintf(" AND room = '%s'", req.Room)
 	}
-	query += fmt.Sprintf(" limit %d offset %d", req.Limit, req.Offset)
+	query += fmt.Sprintf(" limit %d offset %d", req.Limit, (req.Page-1)*req.Limit)
 
 	rows, err := G.DB.Query(query)
 	if err != nil {
@@ -137,10 +137,24 @@ func (G *groupImpl) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp,
 		}
 		groups = append(groups, &group)
 	}
+	var count int32
+	query = `
+			SELECT 
+				COUNT(id)
+			FROM 
+				groups
+			WHERE
+				deleted_at IS NULL`
+	err = G.DB.QueryRow(query).Scan(&count)
+	if err != nil {
+		G.Logger.Error(err.Error())
+		return nil, err
+	}
 	return &pb.GetAllGroupsResp{
 		Groups: groups,
 		Limit:  req.Limit,
-		Offset: req.Offset,
+		Page:   req.Page,
+		Count:  count,
 	}, nil
 }
 
@@ -344,5 +358,12 @@ func (G *groupImpl) DeleteGroupDay(req *pb.DeleteGroupDayReq) (*pb.DeleteGroupDa
 	}
 	return &pb.DeleteGroupDayResp{
 		Status: "Muvaffaqiyatli o'chirildi",
+	}, nil
+}
+
+func (G *groupImpl) StartLesson(req *pb.StartLessonReq) (*pb.StartLessonResp, error) {
+	//Create task
+	return &pb.StartLessonResp{
+		Status: "",
 	}, nil
 }

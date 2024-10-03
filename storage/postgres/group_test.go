@@ -91,7 +91,7 @@ func Test_GetAllGroups(t *testing.T) {
 
 	_, err := group.GetAllGroups(&pb.GetAllGroupsReq{
 		Limit:  10,
-		Offset: 0,
+		Page: 1,
 	})
 	if err != nil {
 		t.Fatal(err.Error())
