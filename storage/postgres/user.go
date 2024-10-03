@@ -204,9 +204,10 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 		params = append(params, req.Limit)
 		paramIndex++
 	}
-	if req.Offset > 0 {
+	offset := (req.Page - 1) * req.Limit
+	if offset > 0 {
 		query += fmt.Sprintf(" OFFSET $%d", paramIndex)
-		params = append(params, (req.Offset-1)*req.Limit)
+		params = append(params, (offset-1)*req.Limit)
 		paramIndex++
 	}
 
@@ -260,7 +261,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) 
 	return &pb.GetAllUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,
-		Page:       (req.Offset - 1) * req.Limit,
+		Page:       req.Page,
 		Limit:      req.Limit,
 	}, nil
 }
