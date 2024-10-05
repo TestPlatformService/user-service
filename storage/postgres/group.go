@@ -120,8 +120,6 @@ func (G *groupImpl) GetAllGroups(req *pb.GetAllGroupsReq) (*pb.GetAllGroupsResp,
 	if len(req.Room) > 0 {
 		query += fmt.Sprintf(" AND room = '%s'", req.Room)
 	}
-	offset := (req.Page - 1) * req.Limit
-	query += fmt.Sprintf(" limit %d offset %d", req.Limit, offset)
 	query += fmt.Sprintf(" limit %d offset %d", req.Limit, (req.Page-1)*req.Limit)
 
 	rows, err := G.DB.Query(query)
